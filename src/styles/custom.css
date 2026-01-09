@@ -1,0 +1,132 @@
+:root {
+  --blue: #0b6fb8;
+  --blue-dark: #084f85;
+  --gray-light: #f4f6f8;
+  --yellow: #f6c343;
+}
+
+/* Regular */
+@font-face {
+  font-family: "Graphik";
+  src: url("/fonts/Graphik-Regular-Trial.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* Italic */
+@font-face {
+  font-family: "Graphik";
+  src: url("/fonts/Graphik-Italic-Trial.otf") format("opentype");
+  font-weight: 400;
+  font-style: italic;
+}
+
+/* Bold */
+@font-face {
+  font-family: "Graphik";
+  src: url("/fonts/Graphik-Bold-Trial.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* Bold Italic */
+@font-face {
+  font-family: "Graphik";
+  src: url("/fonts/Graphik-BoldItalic-Trial.otf") format("opentype");
+  font-weight: 700;
+  font-style: italic;
+}
+
+/* Appliquer Graphik partout */
+body {
+  font-family: "Graphik", sans-serif;
+}
+
+.text-blue {
+  color: var(--blue-dark);
+}
+.text-light-blue {
+  color : var(--blue)
+}
+
+.bg-blue {
+  background-color: var(--blue);
+}
+
+.btn-blue {
+  background-color: var(--blue);
+  color: #fff;
+  font-weight: 600;
+}
+
+.btn-blue:hover {
+  background-color: var(--blue-dark);
+  color: #fff;
+}
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+button {
+  white-space: nowrap;
+}
+.hero-section {
+  background-size: cover;
+  background-position: center;
+  min-height: 60vh;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+@media (min-width: 768px) {
+  .hero-section {
+    min-height: 75vh;
+  }
+}
+header img {
+  max-height: 100px;
+  width: auto;
+}
+.navbar-toggler {
+  border: none;
+}
+
+.nav-link {
+  font-weight: 500;
+}
+.nav-link.active {
+  color: #0d6efd;
+  font-weight: 600;
+  border-bottom: 2px solid #0d6efd;
+}
+.notfound-img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Mobile */
+@media (max-width: 576px) {
+  .notfound-img {
+    max-width: 260px;
+    margin: 0 auto;
+  }
+}
+
+/* Tablette */
+@media (min-width: 577px) and (max-width: 991px) {
+  .notfound-img {
+    max-width: 340px;
+  }
+}
+
+/* Desktop */
+@media (min-width: 992px) {
+  .notfound-img {
+    max-width: 420px;
+  }
+}
