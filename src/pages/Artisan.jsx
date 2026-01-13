@@ -1,25 +1,31 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function Artisan() {
   const { id } = useParams();
   const [artisan, setArtisan] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     async function fetchArtisan() {
       try {
-        const res =  await fetch(`${API_URL}/api/artisans/${id}`);
-        if (!res.ok) throw new Error("Artisan non trouvé");
+        const API_URL = import.meta.env.VITE_API_URL;
+
+        if (!API_URL) {
+          throw new Error("VITE_API_URL non défini");
+        }
+
+        const res = await fetch(`${API_URL}/api/artisans/${id}`);
+        if (!res.ok) {
+          throw new Error(`Artisan non trouvé (HTTP ${res.status})`);
+        }
 
         const data = await res.json();
-      
-
         setArtisan(data);
       } catch (err) {
         console.error(err);
+        setError(err.message);
       } finally {
         setLoading(false);
       }
@@ -29,6 +35,7 @@ export default function Artisan() {
   }, [id]);
 
   if (loading) return <p className="text-center py-5">Chargement...</p>;
+  if (error) return <p className="text-center py-5 text-danger">{error}</p>;
   if (!artisan) return <p className="text-center py-5">Artisan non trouvé</p>;
 
   const renderStars = (note) => {
@@ -52,7 +59,7 @@ export default function Artisan() {
         <div className="row g-0">
           <div className="col-md-4">
             <img
-              src={artisan.image}
+              src={artisan.image || "/images/default-artisan.png"}
               alt={artisan.nom}
               className="img-fluid rounded-start object-fit-cover"
             />
@@ -60,22 +67,27 @@ export default function Artisan() {
 
           <div className="col-md-8">
             <div className="card-body">
-              <h2 className="fw-bold  text-blue">{artisan.nom}</h2>
+              <h2 className="fw-bold text-blue">{artisan.nom}</h2>
               <div className="mb-2">{renderStars(artisan.note)}</div>
 
-              <p><strong>Spécialité :</strong> {artisan.specialite}
-               { ` (${artisan.categorie})`}
-               </p>
-              
               <p>
-                <strong>Localisation :</strong> {artisan.ville}
+                <strong>Spécialité :</strong> {artisan.specialite || "Indisponible"}{" "}
+                {artisan.categorie && `(${artisan.categorie})`}
+              </p>
+
+              <p>
+                <strong>Localisation :</strong> {artisan.ville || "Indisponible"}
                 {artisan.departement && ` (${artisan.departement})`}
               </p>
 
               <p>
                 <strong>Site web :</strong>{" "}
                 {artisan.site_web ? (
-                  <a href={artisan.site_web} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={artisan.site_web}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     {artisan.site_web}
                   </a>
                 ) : (
@@ -84,13 +96,11 @@ export default function Artisan() {
               </p>
 
               <p>
-                <strong>Email :</strong>{" "}
-                {artisan.email ? artisan.email : "Indisponible"}
+                <strong>Email :</strong> {artisan.email || "Indisponible"}
               </p>
 
               <p>
-                <strong>À propos :</strong>{" "}
-                {artisan.a_propos ? artisan.a_propos : "Indisponible"}
+                <strong>À propos :</strong> {artisan.a_propos || "Indisponible"}
               </p>
             </div>
           </div>
