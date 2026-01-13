@@ -1,11 +1,13 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import SearchBar from "./SearchBar";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function Header() {
   const navbarRef = useRef(null);
   const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
+
 
   const closeMenu = () => {
     if (navbarRef.current?.classList.contains("show")) {
@@ -17,7 +19,7 @@ export default function Header() {
   useEffect(() => {
     async function loadCategories() {
       try {
-        const res = await fetch("http://localhost:3000/api/categories");
+        const res =  await fetch(`${API_URL}//api/categories`);
         if (!res.ok) throw new Error("Erreur API catégories");
 
         const data = await res.json();
