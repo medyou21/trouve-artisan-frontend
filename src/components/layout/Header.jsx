@@ -22,7 +22,7 @@ export default function Header() {
         console.log("API_URL =", API_URL); // 🔹 pour debug
         if (!API_URL) throw new Error("NEXT_PUBLIC_API_URL non défini");
 
-        const res = await fetch(`${API_URL}/categories`);
+        const res = await fetch(`${API_URL}/api/categories`);
         if (!res.ok) throw new Error(`Erreur API catégories : ${res.status}`);
 
         const data = await res.json();
