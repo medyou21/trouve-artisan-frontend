@@ -2,7 +2,7 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import SearchBar from "./SearchBar";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default function Header() {
   const navbarRef = useRef(null);
@@ -20,7 +20,7 @@ export default function Header() {
     async function loadCategories() {
       try {
         console.log("API_URL =", API_URL); // 🔹 pour debug
-        if (!API_URL) throw new Error("NEXT_PUBLIC_API_URL non défini");
+        if (!API_URL) throw new Error("VITE_API_URL non défini");
 
         const res = await fetch(`${API_URL}/api/categories`);
         if (!res.ok) throw new Error(`Erreur API catégories : ${res.status}`);
