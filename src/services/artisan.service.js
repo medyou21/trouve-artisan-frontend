@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3000/api";
+const API_URL = "https://app-18bf639f-8d94-41fd-a987-21054a62c8c2.cleverapps.io"; // URL de votre backend;
 
 export async function getArtisansByCategorie(categorie) {
   try {
