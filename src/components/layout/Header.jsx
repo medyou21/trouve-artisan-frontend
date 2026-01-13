@@ -19,6 +19,8 @@ export default function Header() {
   useEffect(() => {
     async function loadCategories() {
       try {
+        console.log("API =", import.meta.env.VITE_API_URL);
+
         console.log("API_URL =", API_URL); // 🔹 pour debug
         if (!API_URL) throw new Error("VITE_API_URL non défini");
 
