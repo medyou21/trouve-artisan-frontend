@@ -3,8 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import ArtisanCard from "../components/artisan/ArtisanCard";
 import { Helmet } from "react-helmet";
 
-const API_URL = "https://app-18bf639f-8d94-41fd-a987-21054a62c8c2.cleverapps.io";
-
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default function Recherche() {
   const [params] = useSearchParams();
