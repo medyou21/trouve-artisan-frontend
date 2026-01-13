@@ -3,7 +3,8 @@ import { useSearchParams } from "react-router-dom";
 import ArtisanCard from "../components/artisan/ArtisanCard";
 import { Helmet } from "react-helmet";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 
 export default function Recherche() {
   const [params] = useSearchParams();

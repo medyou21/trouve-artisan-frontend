@@ -1,15 +1,17 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function Artisan() {
   const { id } = useParams();
   const [artisan, setArtisan] = useState(null);
   const [loading, setLoading] = useState(true);
 
+
   useEffect(() => {
     async function fetchArtisan() {
       try {
-        const res = await fetch(`http://localhost:3000/api/artisans/${id}`);
+        const res =  await fetch(`${API_URL}/api/artisans/${id}`);
         if (!res.ok) throw new Error("Artisan non trouvé");
 
         const data = await res.json();
