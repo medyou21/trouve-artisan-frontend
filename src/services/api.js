@@ -6,18 +6,15 @@ const API_URL = import.meta.env.VITE_API_URL;
  */
 export async function getTopArtisans() {
   try {
-    const response = await fetch(`${API_URL}/artisans/top`);
+    const response = await fetch(`${API_URL}/api/artisans/top`);
 
-    // Vérifie si la requête a réussi
     if (!response.ok) {
       throw new Error(`Erreur HTTP : ${response.status}`);
     }
 
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     console.error("Impossible de récupérer les artisans :", error);
-    return []; 
-    // Retourne un tableau vide en cas d'erreur pour éviter les plantages
+    return [];
   }
 }
