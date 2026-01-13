@@ -5,16 +5,24 @@ const API_URL = import.meta.env.VITE_API_URL;
  * @returns {Promise<Array>} Liste des artisans
  */
 export async function getTopArtisans() {
+  if (!API_URL) {
+    console.error("VITE_API_URL non défini !");
+    return [];
+  }
+
   try {
-    const response = await fetch(`${API_URL}/api/artisans/top`);
+    const url = `${API_URL}/api/artisans/top`;
+    const response = await fetch(url);
 
     if (!response.ok) {
-      throw new Error(`Erreur HTTP : ${response.status}`);
+      const errorText = await response.text();
+      throw new Error(`Erreur API (${response.status}) : ${errorText}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    return data;
   } catch (error) {
-    console.error("Impossible de récupérer les artisans :", error);
+    console.error("Impossible de récupérer les artisans :", error.message);
     return [];
   }
 }

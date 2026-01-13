@@ -15,24 +15,29 @@ export default function Header() {
     }
   };
 
-  // 🔹 Chargement catégories depuis MariaDB
+  // 🔹 Chargement catégories depuis l'API
   useEffect(() => {
     async function loadCategories() {
+      if (!API_URL) {
+        console.error("VITE_API_URL non défini !");
+        return;
+      }
+
       try {
-        console.log("API =", import.meta.env.VITE_API_URL);
-
-        console.log("API_URL =", API_URL); // 🔹 pour debug
-        if (!API_URL) throw new Error("VITE_API_URL non défini");
-
         const res = await fetch(`${API_URL}/api/categories`);
-        if (!res.ok) throw new Error(`Erreur API catégories : ${res.status}`);
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(`Erreur API catégories (${res.status}) : ${errorText}`);
+        }
 
         const data = await res.json();
         setCategories(data);
       } catch (err) {
-        console.error("Erreur chargement catégories", err);
+        console.error("Erreur chargement catégories :", err.message);
+        setCategories([]); // pour éviter les plantages si l'API échoue
       }
     }
+
     loadCategories();
   }, []);
 
@@ -71,13 +76,15 @@ export default function Header() {
               </NavLink>
             </li>
 
-            {categories.map((cat) => (
-              <li className="nav-item" key={cat.id}>
-                <NavLink to={`/${cat.slug}`} className="nav-link" onClick={closeMenu}>
-                  {cat.nom}
-                </NavLink>
-              </li>
-            ))}
+            {categories.length > 0
+              ? categories.map((cat) => (
+                  <li className="nav-item" key={cat.id}>
+                    <NavLink to={`/${cat.slug}`} className="nav-link" onClick={closeMenu}>
+                      {cat.nom}
+                    </NavLink>
+                  </li>
+                ))
+              : null}
           </ul>
 
           {/* Recherche */}
