@@ -19,7 +19,7 @@ export default function Header() {
   useEffect(() => {
     async function loadCategories() {
       try {
-        const res =  await fetch(`${API_URL}//api/categories`);
+        const res =  await fetch(`${API_URL}/api/categories`);
         if (!res.ok) throw new Error("Erreur API catégories");
 
         const data = await res.json();
