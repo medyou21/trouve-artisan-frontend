@@ -1,5 +1,5 @@
-const API_URL = "https://app-18bf639f-8d94-41fd-a987-21054a62c8c2.cleverapps.io"; // URL de votre backend;
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export async function getArtisansByCategorie(categorie) {
   try {
     const res = await fetch(
