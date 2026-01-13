@@ -1,13 +1,13 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import SearchBar from "./SearchBar";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function Header() {
   const navbarRef = useRef(null);
   const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
-
 
   const closeMenu = () => {
     if (navbarRef.current?.classList.contains("show")) {
@@ -19,8 +19,11 @@ export default function Header() {
   useEffect(() => {
     async function loadCategories() {
       try {
-        const res =  await fetch(`${API_URL}/api/categories`);
-        if (!res.ok) throw new Error("Erreur API catégories");
+        console.log("API_URL =", API_URL); // 🔹 pour debug
+        if (!API_URL) throw new Error("NEXT_PUBLIC_API_URL non défini");
+
+        const res = await fetch(`${API_URL}/categories`);
+        if (!res.ok) throw new Error(`Erreur API catégories : ${res.status}`);
 
         const data = await res.json();
         setCategories(data);
@@ -41,7 +44,6 @@ export default function Header() {
   return (
     <header className="border-bottom bg-white sticky-top">
       <nav className="navbar navbar-expand-lg container py-3">
-
         {/* Logo */}
         <Link to="/" className="navbar-brand d-flex align-items-center gap-2">
           <img src="/images/Logo.png" alt="Logo" height="70" />
@@ -59,28 +61,17 @@ export default function Header() {
         </button>
 
         {/* Menu */}
-        <div
-          ref={navbarRef}
-          className="collapse navbar-collapse"
-          id="mainNavbar"
-        >
+        <div ref={navbarRef} className="collapse navbar-collapse" id="mainNavbar">
           <ul className="navbar-nav mx-auto text-center">
-
-            {/* Accueil */}
             <li className="nav-item">
               <NavLink to="/" className="nav-link" onClick={closeMenu}>
                 Accueil
               </NavLink>
             </li>
 
-            {/* Catégories dynamiques */}
             {categories.map((cat) => (
               <li className="nav-item" key={cat.id}>
-                <NavLink
-                  to={`/${cat.slug}`}
-                  className="nav-link"
-                  onClick={closeMenu}
-                >
+                <NavLink to={`/${cat.slug}`} className="nav-link" onClick={closeMenu}>
                   {cat.nom}
                 </NavLink>
               </li>
