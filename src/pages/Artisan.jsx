@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 
 export default function Artisan() {
   const { id } = useParams();
+
+  // ✅ États du composant
   const [artisan, setArtisan] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -47,7 +49,7 @@ export default function Artisan() {
     );
   };
 
-  // 🔹 Envoi du formulaire de contact
+  // 🔹 Gestion de l'envoi du formulaire de contact
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!artisan) return;
@@ -78,6 +80,7 @@ export default function Artisan() {
     }
   };
 
+  // 🔹 Gestion des états de chargement / erreur
   if (loading) return <p className="text-center py-5">Chargement...</p>;
   if (error) return <p className="text-center py-5 text-danger">{error}</p>;
   if (!artisan) return <p className="text-center py-5">Artisan non trouvé</p>;
@@ -113,11 +116,7 @@ export default function Artisan() {
               <p>
                 <strong>Site web :</strong>{" "}
                 {artisan.site_web ? (
-                  <a
-                    href={artisan.site_web}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                  <a href={artisan.site_web} target="_blank" rel="noopener noreferrer">
                     {artisan.site_web}
                   </a>
                 ) : (

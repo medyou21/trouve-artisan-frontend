@@ -1,8 +1,8 @@
 const API_URL = import.meta.env.VITE_API_URL;
 
 /**
- * Récupère les artisans les mieux notés depuis l'API.
- * @returns {Promise<Array>} Liste des artisans
+ * 🔹 Récupère les artisans les mieux notés depuis l'API.
+ * @returns {Promise<Array>} Liste des artisans normalisés
  */
 export async function getTopArtisans() {
   if (!API_URL) {
@@ -20,7 +20,19 @@ export async function getTopArtisans() {
     }
 
     const data = await response.json();
-    return data;
+
+    // 🔹 Normalisation des données pour éviter les valeurs nulles ou mal formatées
+    const normalizedData = data.map((a) => ({
+      id: a.id,
+      nom: a.nom || "Indisponible",
+      specialite: a.specialite || "Non précisée",
+      ville: a.ville || "Indisponible",
+      departement: a.departement || "",
+      note: Number(a.note) || 0,
+      image: a.image || "/images/placeholder.jpg",
+    }));
+
+    return normalizedData;
   } catch (error) {
     console.error("Impossible de récupérer les artisans :", error.message);
     return [];

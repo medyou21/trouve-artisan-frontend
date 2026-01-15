@@ -2,34 +2,54 @@ import { useEffect, useState } from "react";
 import ArtisanCard from "../components/artisan/ArtisanCard";
 import { getArtisansByCategorie } from "../services/artisan.service";
 
+/**
+ * Page Services
+ * Affiche la liste des artisans de la catégorie "Alimentation"
+ * avec filtres par département et ville.
+ */
 export default function Services() {
   const [artisans, setArtisans] = useState([]);
   const [filteredArtisans, setFilteredArtisans] = useState([]);
   const [departements, setDepartements] = useState([]);
   const [loading, setLoading] = useState(true);
+
   const [departement, setDepartement] = useState("Tous");
   const [ville, setVille] = useState("");
 
+  /**
+   * Normalisation des chaînes
+   * → suppression des accents
+   * → comparaison insensible à la casse
+   */
+  const normalize = (str = "") =>
+    str
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+
+  /**
+   * Chargement des artisans depuis l'API
+   */
   useEffect(() => {
     async function loadArtisans() {
       try {
         const data = await getArtisansByCategorie("Alimentation");
 
-        // ✅ Normalisation MariaDB
-        const normalizedData = data.map((a) => ({
-          id: a.id,
-          nom: a.nom,
-          specialite: a.specialite,
-          ville: a.ville || "",
-          departement: a.departement || "",
-          note: Number(a.note) || 0,
-          image: a.image || "/images/placeholder.jpg",
+        // Normalisation des données (MariaDB → Frontend)
+        const normalizedData = data.map((artisan) => ({
+          id: artisan.id,
+          nom: artisan.nom,
+          specialite: artisan.specialite,
+          ville: artisan.ville || "",
+          departement: artisan.departement || "",
+          note: Number(artisan.note) || 0,
+          image: artisan.image || "/images/placeholder.jpg",
         }));
 
         setArtisans(normalizedData);
         setFilteredArtisans(normalizedData);
 
-        // ✅ Départements uniques
+        // Départements uniques
         const uniqueDepartements = [
           ...new Set(
             normalizedData
@@ -49,58 +69,75 @@ export default function Services() {
     loadArtisans();
   }, []);
 
- const normalize = (str = "") =>
-  str
-    .normalize("NFD")              // sépare lettres et accents
-    .replace(/[\u0300-\u036f]/g, "") // supprime les accents
-    .toLowerCase();
-
+  /**
+   * Application des filtres
+   */
   const handleSearch = () => {
-    let results = artisans;
+    let results = [...artisans];
 
-     if (departement !== "Tous") {
-    results = results.filter(
-      (a) => normalize(a.departement) === normalize(departement)
-    );
-  }
+    if (departement !== "Tous") {
+      results = results.filter(
+        (a) => normalize(a.departement) === normalize(departement)
+      );
+    }
 
-  if (ville.trim() !== "") {
-    results = results.filter((a) =>
-      normalize(a.ville).includes(normalize(ville))
-    );
-  }
+    if (ville.trim() !== "") {
+      results = results.filter((a) =>
+        normalize(a.ville).includes(normalize(ville))
+      );
+    }
 
     setFilteredArtisans(results);
-     // ✅ Réinitialisation des filtres
-  setDepartement("Tous");
-  setVille("");
   };
 
+  /**
+   * État de chargement
+   */
   if (loading) {
-    return <p className="text-center py-5">Chargement...</p>;
+    return (
+      <p className="text-center py-5" aria-live="polite">
+        Chargement des artisans...
+      </p>
+    );
   }
 
   return (
-    <div className="container py-4">
-      {/* Breadcrumb */}
-      <p className="small text-muted">
-        Accueil / <strong>Alimentation</strong>
-      </p>
+    <main className="container py-4">
+      {/* Fil d'Ariane */}
+      <nav aria-label="Fil d’Ariane">
+        <p className="small text-muted">
+          Accueil / <strong>Alimentation</strong>
+        </p>
+      </nav>
 
-      <h2 className="fw-bold mb-4">
+      <h1 className="fw-bold mb-4">
         Trouver un artisan de l’alimentation
-      </h2>
+      </h1>
 
       <div className="row">
         {/* FILTRES */}
         <aside className="col-md-3 mb-4">
-          <div className="border rounded p-3 bg-light">
-            <h6 className="fw-bold mb-3">Filtrer les résultats</h6>
+          <form
+            className="border rounded p-3 bg-light"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSearch();
+            }}
+          >
+            <h2 className="h6 fw-bold mb-3">
+              Filtrer les résultats
+            </h2>
 
             {/* Département */}
             <div className="mb-3">
-              <label className="form-label small">Département</label>
+              <label
+                htmlFor="departement"
+                className="form-label small"
+              >
+                Département
+              </label>
               <select
+                id="departement"
                 className="form-select form-select-sm"
                 value={departement}
                 onChange={(e) => setDepartement(e.target.value)}
@@ -116,8 +153,14 @@ export default function Services() {
 
             {/* Ville */}
             <div className="mb-3">
-              <label className="form-label small">Ville</label>
+              <label
+                htmlFor="ville"
+                className="form-label small"
+              >
+                Ville
+              </label>
               <input
+                id="ville"
                 type="text"
                 className="form-control form-control-sm"
                 placeholder="Ex : Lyon"
@@ -127,15 +170,15 @@ export default function Services() {
             </div>
 
             <button
+              type="submit"
               className="btn btn-primary btn-sm w-100"
-              onClick={handleSearch}
             >
               Rechercher
             </button>
-          </div>
+          </form>
         </aside>
 
-        {/* LISTE */}
+        {/* LISTE DES ARTISANS */}
         <section className="col-md-9">
           <div className="card shadow-sm mb-4">
             <div className="card-body">
@@ -144,6 +187,12 @@ export default function Services() {
                 {filteredArtisans.length > 1 ? "s" : ""} trouvé
                 {filteredArtisans.length > 1 ? "s" : ""}
               </p>
+
+              {filteredArtisans.length === 0 && (
+                <p className="text-center text-muted py-4">
+                  Aucun artisan ne correspond à votre recherche.
+                </p>
+              )}
 
               <div className="row g-4">
                 {filteredArtisans.map((artisan) => (
@@ -162,6 +211,6 @@ export default function Services() {
           </div>
         </section>
       </div>
-    </div>
+    </main>
   );
 }

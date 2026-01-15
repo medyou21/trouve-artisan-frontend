@@ -2,20 +2,40 @@ import { useEffect, useState } from "react";
 import ArtisanCard from "../components/artisan/ArtisanCard";
 import { getArtisansByCategorie } from "../services/artisan.service";
 
-export default function Batiment() {
+/**
+ * Page Fabrication
+ * Affiche les artisans de la catégorie "Fabrication"
+ * avec filtres par département et ville.
+ */
+export default function Fabrication() {
   const [artisans, setArtisans] = useState([]);
   const [filteredArtisans, setFilteredArtisans] = useState([]);
   const [departements, setDepartements] = useState([]);
   const [loading, setLoading] = useState(true);
+
   const [departement, setDepartement] = useState("Tous");
   const [ville, setVille] = useState("");
 
+  /**
+   * Normalisation chaîne :
+   * - Supprime les accents
+   * - Ignore la casse
+   */
+  const normalize = (str = "") =>
+    str
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+
+  /**
+   * Chargement des artisans via l'API
+   */
   useEffect(() => {
     async function loadArtisans() {
       try {
         const data = await getArtisansByCategorie("Fabrication");
 
-        // ✅ Normalisation MariaDB
+        // Normalisation des données
         const normalizedData = data.map((a) => ({
           id: a.id,
           nom: a.nom,
@@ -29,7 +49,7 @@ export default function Batiment() {
         setArtisans(normalizedData);
         setFilteredArtisans(normalizedData);
 
-        // ✅ Départements uniques
+        // Extraire départements uniques
         const uniqueDepartements = [
           ...new Set(
             normalizedData
@@ -40,7 +60,7 @@ export default function Batiment() {
 
         setDepartements(uniqueDepartements);
       } catch (error) {
-        console.error("Erreur chargement bâtiment :", error);
+        console.error("Erreur chargement Fabrication :", error);
       } finally {
         setLoading(false);
       }
@@ -48,56 +68,72 @@ export default function Batiment() {
 
     loadArtisans();
   }, []);
-const normalize = (str = "") =>
-  str
-    .normalize("NFD")              // sépare lettres et accents
-    .replace(/[\u0300-\u036f]/g, "") // supprime les accents
-    .toLowerCase();
 
+  /**
+   * Filtrage des artisans
+   */
   const handleSearch = () => {
-    let results = artisans;
+    let results = [...artisans];
 
-     if (departement !== "Tous") {
-    results = results.filter(
-      (a) => normalize(a.departement) === normalize(departement)
-    );
-  }
+    if (departement !== "Tous") {
+      results = results.filter(
+        (a) => normalize(a.departement) === normalize(departement)
+      );
+    }
 
-  if (ville.trim() !== "") {
-    results = results.filter((a) =>
-      normalize(a.ville).includes(normalize(ville))
-    );
-  }
+    if (ville.trim() !== "") {
+      results = results.filter((a) =>
+        normalize(a.ville).includes(normalize(ville))
+      );
+    }
 
     setFilteredArtisans(results);
-     // ✅ Réinitialisation des filtres
-  setDepartement("Tous");
-  setVille("");
+
+    // Réinitialisation des filtres
+    setDepartement("Tous");
+    setVille("");
   };
 
   if (loading) {
-    return <p className="text-center py-5">Chargement...</p>;
+    return (
+      <p className="text-center py-5" aria-live="polite">
+        Chargement des artisans...
+      </p>
+    );
   }
 
   return (
-    <div className="container py-4">
-      <p className="small text-muted">
-        Accueil / <strong>Fabrication</strong>
-      </p>
+    <main className="container py-4">
+      {/* Breadcrumb */}
+      <nav aria-label="Fil d’Ariane">
+        <p className="small text-muted">
+          Accueil / <strong>Fabrication</strong>
+        </p>
+      </nav>
 
-      <h2 className="fw-bold mb-4">
-        Trouver un artisan du fabrication
-      </h2>
+      <h1 className="fw-bold mb-4">
+        Trouver un artisan de la fabrication
+      </h1>
 
       <div className="row">
         {/* FILTRES */}
         <aside className="col-md-3 mb-4">
-          <div className="border rounded p-3 bg-light">
-            <h6 className="fw-bold mb-3">Filtrer les résultats</h6>
+          <form
+            className="border rounded p-3 bg-light"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSearch();
+            }}
+          >
+            <h2 className="h6 fw-bold mb-3">Filtrer les résultats</h2>
 
+            {/* Département */}
             <div className="mb-3">
-              <label className="form-label small">Département</label>
+              <label htmlFor="departement" className="form-label small">
+                Département
+              </label>
               <select
+                id="departement"
                 className="form-select form-select-sm"
                 value={departement}
                 onChange={(e) => setDepartement(e.target.value)}
@@ -111,9 +147,13 @@ const normalize = (str = "") =>
               </select>
             </div>
 
+            {/* Ville */}
             <div className="mb-3">
-              <label className="form-label small">Ville</label>
+              <label htmlFor="ville" className="form-label small">
+                Ville
+              </label>
               <input
+                id="ville"
                 type="text"
                 className="form-control form-control-sm"
                 placeholder="Ex : Lyon"
@@ -122,16 +162,13 @@ const normalize = (str = "") =>
               />
             </div>
 
-            <button
-              className="btn btn-primary btn-sm w-100"
-              onClick={handleSearch}
-            >
+            <button type="submit" className="btn btn-primary btn-sm w-100">
               Rechercher
             </button>
-          </div>
+          </form>
         </aside>
 
-        {/* LISTE */}
+        {/* LISTE DES ARTISANS */}
         <section className="col-md-9">
           <div className="card shadow-sm mb-4">
             <div className="card-body">
@@ -140,6 +177,12 @@ const normalize = (str = "") =>
                 {filteredArtisans.length > 1 ? "s" : ""} trouvé
                 {filteredArtisans.length > 1 ? "s" : ""}
               </p>
+
+              {filteredArtisans.length === 0 && (
+                <p className="text-center text-muted py-4">
+                  Aucun artisan ne correspond à votre recherche.
+                </p>
+              )}
 
               <div className="row g-4">
                 {filteredArtisans.map((artisan) => (
@@ -158,6 +201,6 @@ const normalize = (str = "") =>
           </div>
         </section>
       </div>
-    </div>
+    </main>
   );
 }
