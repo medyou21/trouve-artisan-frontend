@@ -6,20 +6,17 @@ export default function Artisan() {
   const [artisan, setArtisan] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [sending, setSending] = useState(false);
+  const [contactMessage, setContactMessage] = useState("");
 
   useEffect(() => {
     async function fetchArtisan() {
       try {
         const API_URL = import.meta.env.VITE_API_URL;
-
-        if (!API_URL) {
-          throw new Error("VITE_API_URL non défini");
-        }
+        if (!API_URL) throw new Error("VITE_API_URL non défini");
 
         const res = await fetch(`${API_URL}/api/artisans/${id}`);
-        if (!res.ok) {
-          throw new Error(`Artisan non trouvé (HTTP ${res.status})`);
-        }
+        if (!res.ok) throw new Error(`Artisan non trouvé (HTTP ${res.status})`);
 
         const data = await res.json();
         setArtisan(data);
@@ -33,10 +30,6 @@ export default function Artisan() {
 
     fetchArtisan();
   }, [id]);
-
-  if (loading) return <p className="text-center py-5">Chargement...</p>;
-  if (error) return <p className="text-center py-5 text-danger">{error}</p>;
-  if (!artisan) return <p className="text-center py-5">Artisan non trouvé</p>;
 
   const renderStars = (note) => {
     const rounded = Math.round(note);
@@ -52,9 +45,39 @@ export default function Artisan() {
     );
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!artisan) return;
+    const API_URL = import.meta.env.VITE_API_URL;
+    const formData = new FormData(e.target);
+    const payload = Object.fromEntries(formData.entries());
+
+    try {
+      setSending(true);
+      setContactMessage("");
+      const res = await fetch(`${API_URL}/api/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      setContactMessage(data.message);
+      e.target.reset();
+    } catch (err) {
+      console.error(err);
+      setContactMessage("Erreur lors de l'envoi du message");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (loading) return <p className="text-center py-5">Chargement...</p>;
+  if (error) return <p className="text-center py-5 text-danger">{error}</p>;
+  if (!artisan) return <p className="text-center py-5">Artisan non trouvé</p>;
+
   return (
     <div className="container py-5">
-      {/* Carte principale */}
+      {/* Carte artisan */}
       <div className="card shadow-sm mb-4">
         <div className="row g-0">
           <div className="col-md-4">
@@ -62,9 +85,9 @@ export default function Artisan() {
               src={artisan.image || "/images/default-artisan.png"}
               alt={artisan.nom}
               className="img-fluid rounded-start object-fit-cover"
+              style={{ width: "100%", height: "300px", objectFit: "cover" }}
             />
           </div>
-
           <div className="col-md-8">
             <div className="card-body">
               <h2 className="fw-bold text-blue">{artisan.nom}</h2>
@@ -111,46 +134,47 @@ export default function Artisan() {
       <div className="card shadow-sm">
         <div className="card-body">
           <h5 className="fw-bold mb-3">Contacter l’artisan</h5>
-          <form
-            action={artisan.email ? `mailto:${artisan.email}` : "#"}
-            method="POST"
-            encType="text/plain"
-          >
-            <div className="row">
-              <div className="col-md-6 mb-3">
-                <label className="form-label">Nom</label>
-                <input type="text" className="form-control" required />
+          {artisan.email ? (
+            <form onSubmit={handleSubmit}>
+              <div className="row">
+                <div className="col-md-6 mb-3">
+                  <label className="form-label">Nom</label>
+                  <input type="text" name="nom" className="form-control" required />
+                </div>
+                <div className="col-md-6 mb-3">
+                  <label className="form-label">Email</label>
+                  <input type="email" name="email" className="form-control" required />
+                </div>
               </div>
-              <div className="col-md-6 mb-3">
-                <label className="form-label">Email</label>
-                <input type="email" className="form-control" required />
+
+              <div className="mb-3">
+                <label className="form-label">Objet</label>
+                <input type="text" name="objet" className="form-control" required />
               </div>
-            </div>
 
-            <div className="mb-3">
-              <label className="form-label">Objet</label>
-              <input type="text" className="form-control" required />
-            </div>
+              <div className="mb-3">
+                <label className="form-label">Message</label>
+                <textarea
+                  name="message"
+                  className="form-control"
+                  rows="4"
+                  required
+                ></textarea>
+              </div>
 
-            <div className="mb-3">
-              <label className="form-label">Message</label>
-              <textarea className="form-control" rows="4" required></textarea>
-            </div>
+              <button type="submit" className="btn btn-primary" disabled={sending}>
+                {sending ? "Envoi..." : "Envoyer le message"}
+              </button>
 
-            <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={!artisan.email}
-            >
-              Envoyer le message
-            </button>
-
-            {!artisan.email && (
-              <p className="small text-muted mt-2">
-                Aucun email disponible pour ce prestataire.
-              </p>
-            )}
-          </form>
+              {contactMessage && (
+                <p className="mt-2 text-success">{contactMessage}</p>
+              )}
+            </form>
+          ) : (
+            <p className="small text-muted">
+              Aucun email disponible pour ce prestataire.
+            </p>
+          )}
         </div>
       </div>
     </div>
