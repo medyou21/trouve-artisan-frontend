@@ -157,17 +157,7 @@ export default function Recherche() {
               </select>
             </div>
 
-            {/* Ville */}
-            <div className="mb-3">
-              <label className="form-label small">Ville</label>
-              <input
-                type="text"
-                className="form-control form-control-sm"
-                placeholder="Ex : Lyon"
-                value={ville}
-                onChange={(e) => setVille(e.target.value)}
-              />
-            </div>
+           
 
             <button
               className="btn btn-primary btn-sm w-100"
