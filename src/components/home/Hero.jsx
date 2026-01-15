@@ -33,6 +33,7 @@ export default function Hero() {
             <Link
               to="/recherche"
               className="btn btn-blue btn-lg mt-3"
+              style={{ position: "relative", zIndex: 2 }}
               aria-label="Accéder à la recherche d’artisans"
             >
               Trouver un artisan
