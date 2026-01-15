@@ -63,9 +63,19 @@ body {
   background-color: var(--blue-dark);
   color: #fff;
 }
-img {
+/* img {
   max-width: 100%;
   height: auto;
+} */
+
+img {
+  width: 100%;          /* occupe toute la largeur du conteneur */
+  max-width: 400px;     /* taille maximale standard (modifiable) */
+  height: 300px;        /* hauteur standard (modifiable) */
+  object-fit: cover;    /* recadre l'image pour remplir le conteneur sans déformer */
+  display: block;
+  margin: 0 auto;
+  border-radius: 8px;   /* optionnel, arrondi */
 }
 
 button {
