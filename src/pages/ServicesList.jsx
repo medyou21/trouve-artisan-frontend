@@ -1,3 +1,4 @@
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ArtisanCard from "../components/artisan/ArtisanCard";
 import { getArtisansByCategorie } from "../services/artisan.service";
@@ -86,7 +87,12 @@ export default function Services() {
     <div className="container py-4">
       {/* Breadcrumb */}
       <p className="small text-muted">
-        Accueil / <strong>Services</strong>
+        <NavLink
+                to="/"
+                className="nav-link"
+                             >
+                Accueil
+              </NavLink> / <strong>Services</strong>
       </p>
 
       <h2 className="fw-bold mb-4">Trouver un prestataire de services</h2>

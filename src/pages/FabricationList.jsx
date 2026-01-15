@@ -1,3 +1,4 @@
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ArtisanCard from "../components/artisan/ArtisanCard";
 import { getArtisansByCategorie } from "../services/artisan.service";
@@ -107,7 +108,12 @@ export default function Fabrication() {
       {/* Breadcrumb */}
       <nav aria-label="Fil d’Ariane">
         <p className="small text-muted">
-          Accueil / <strong>Fabrication</strong>
+          <NavLink
+                to="/"
+                className="nav-link"
+                             >
+                Accueil
+              </NavLink> / <strong>Fabrication</strong>
         </p>
       </nav>
 

@@ -112,7 +112,7 @@ export default function Services() {
                 className="nav-link"
                              >
                 Accueil
-              </NavLink> Accueil / <strong>Alimentation</strong>
+              </NavLink> / <strong>Alimentation</strong>
         </p>
       </nav>
 
