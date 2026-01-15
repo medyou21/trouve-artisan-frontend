@@ -8,23 +8,26 @@ const API_URL = import.meta.env.VITE_API_URL;
 export default function Recherche() {
   const [params] = useSearchParams();
   const query = params.get("query") || "";
-  const category = params.get("category") || ""; // pour filtrer par catégorie si besoin
 
+  // ✅ États
   const [artisans, setArtisans] = useState([]);
+  const [filteredArtisans, setFilteredArtisans] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [departements, setDepartements] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("Tous");
+  const [selectedDepartement, setSelectedDepartement] = useState("Tous");
   const [loading, setLoading] = useState(true);
 
+  // 🔹 Récupération des artisans
   useEffect(() => {
     async function fetchResults() {
       setLoading(true);
       try {
         let url = `${API_URL}/api/artisans`;
-
-        if (category) {
-          url = `${API_URL}/api/artisans/categorie/${encodeURIComponent(
-            category
+        if (query) {
+          url = `${API_URL}/api/artisans/search?query=${encodeURIComponent(
+            query
           )}`;
-        } else if (query) {
-          url = `${API_URL}/api/artisans/search?query=${encodeURIComponent(query)}`;
         }
 
         const res = await fetch(url);
@@ -32,43 +35,67 @@ export default function Recherche() {
 
         const data = await res.json();
 
+        // Normalisation
         const normalizedData = data.map((a) => ({
           id: a.id,
           nom: a.nom,
-          specialite: a.specialite || "Indisponible",
+          specialite: a.specialite,
           ville: a.ville || "Indisponible",
+          departement: a.departement || "Indisponible",
+          categorie: a.categorie || "Indisponible",
           note: Number(a.note) || 0,
           image: a.image || "/images/placeholder.jpg",
         }));
 
         setArtisans(normalizedData);
+        setFilteredArtisans(normalizedData);
+
+        // Extraire les catégories uniques
+        const uniqueCategories = [
+          ...new Set(normalizedData.map((a) => a.categorie).filter(Boolean)),
+        ].sort();
+        setCategories(uniqueCategories);
+
+        // Extraire les départements uniques
+        const uniqueDepartements = [
+          ...new Set(normalizedData.map((a) => a.departement).filter(Boolean)),
+        ].sort();
+        setDepartements(uniqueDepartements);
       } catch (err) {
         console.error("Erreur recherche :", err);
         setArtisans([]);
+        setFilteredArtisans([]);
       } finally {
         setLoading(false);
       }
     }
 
     fetchResults();
-  }, [query, category]);
+  }, [query]);
+
+  // 🔹 Filtrage selon catégorie et département
+  useEffect(() => {
+    let results = [...artisans];
+
+    if (selectedCategory !== "Tous") {
+      results = results.filter((a) => a.categorie === selectedCategory);
+    }
+
+    if (selectedDepartement !== "Tous") {
+      results = results.filter((a) => a.departement === selectedDepartement);
+    }
+
+    setFilteredArtisans(results);
+  }, [selectedCategory, selectedDepartement, artisans]);
 
   return (
     <div className="container py-4">
       <Helmet>
-        <title>
-          {category
-            ? `Artisans ${category}`
-            : query
-            ? `Résultats : ${query}`
-            : "Tous les artisans"}
-        </title>
+        <title>Recherche{query ? ` : ${query}` : ""}</title>
         <meta
           name="description"
           content={
-            category
-              ? `Liste des artisans pour la catégorie ${category}`
-              : query
+            query
               ? `Résultats de recherche pour ${query}`
               : "Tous les artisans disponibles"
           }
@@ -76,21 +103,55 @@ export default function Recherche() {
       </Helmet>
 
       <h2 className="fw-bold mb-4">
-        {category
-          ? `Artisans : ${category}`
-          : query
-          ? `Résultats pour « ${query} »`
-          : "Tous les artisans"}
+        {query ? `Résultats pour « ${query} »` : "Tous les artisans"}
       </h2>
 
-      {loading && <p className="text-center py-5">Chargement...</p>}
-      {!loading && artisans.length === 0 && (
-        <p className="text-center py-5">Aucun artisan trouvé.</p>
-      )}
+      {/* 🔹 Filtres */}
+      <div className="row mb-4">
+        <div className="col-md-3">
+          {/* Filtre Catégorie */}
+          <div className="mb-3">
+            <label className="form-label small">Catégorie</label>
+            <select
+              className="form-select form-select-sm"
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+            >
+              <option value="Tous">Tous</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Filtre Département */}
+          <div className="mb-3">
+            <label className="form-label small">Département</label>
+            <select
+              className="form-select form-select-sm"
+              value={selectedDepartement}
+              onChange={(e) => setSelectedDepartement(e.target.value)}
+            >
+              <option value="Tous">Tous</option>
+              {departements.map((dep) => (
+                <option key={dep} value={dep}>
+                  {dep}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
 
       {/* 🔹 Liste des artisans */}
+      {loading && <p className="text-center">Chargement...</p>}
+      {!loading && filteredArtisans.length === 0 && (
+        <p className="text-center">Aucun artisan trouvé.</p>
+      )}
       <div className="row g-4">
-        {artisans.map((artisan) => (
+        {filteredArtisans.map((artisan) => (
           <ArtisanCard
             key={artisan.id}
             id={artisan.id}
