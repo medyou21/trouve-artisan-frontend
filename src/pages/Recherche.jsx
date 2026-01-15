@@ -100,49 +100,36 @@ export default function Recherche() {
 
 
 import { useEffect, useState } from "react";
-import { Link, useSearchParams, useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import ArtisanCard from "../components/artisan/ArtisanCard";
 import { getArtisansByCategorie } from "../services/artisan.service";
 
 /**
- * Page listant les artisans selon une catégorie ou une recherche
+ * Page affichant les artisans d'une catégorie
  */
-export default function ArtisanList() {
-  const location = useLocation();
-  const [params] = useSearchParams();
-  const query = params.get("query") || ""; // recherche
-  const category = params.get("categorie") || ""; // catégorie
+export default function ArtisanByCategory() {
+  const { id } = useParams(); // id = nom de la catégorie
   const [artisans, setArtisans] = useState([]);
+  const [filteredArtisans, setFilteredArtisans] = useState([]);
+  const [departements, setDepartements] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [departement, setDepartement] = useState("Tous");
+  const [ville, setVille] = useState("");
 
-  // Normalisation pour affichage et filtre
+  // Normalisation pour comparer sans accents
   const normalize = (str = "") =>
     str
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase();
 
+  // Chargement des artisans par catégorie
   useEffect(() => {
-    async function fetchArtisans() {
+    async function loadArtisans() {
       setLoading(true);
       try {
-        let data = [];
+        const data = await getArtisansByCategorie(id);
 
-        if (category) {
-          data = await getArtisansByCategorie(category);
-        } else if (query) {
-          const res = await fetch(
-            `${import.meta.env.VITE_API_URL}/api/artisans/search?query=${encodeURIComponent(query)}`
-          );
-          if (!res.ok) throw new Error("Erreur API recherche");
-          data = await res.json();
-        } else {
-          // Par défaut, tous les artisans
-          const res = await fetch(`${import.meta.env.VITE_API_URL}/api/artisans`);
-          if (!res.ok) throw new Error("Erreur API");
-          data = await res.json();
-        }
-
-        // Normalisation des données
         const normalizedData = data.map((a) => ({
           id: a.id,
           nom: a.nom,
@@ -154,76 +141,107 @@ export default function ArtisanList() {
         }));
 
         setArtisans(normalizedData);
+        setFilteredArtisans(normalizedData);
+
+        const uniqueDepartements = [
+          ...new Set(normalizedData.map((a) => a.departement).filter(Boolean)),
+        ].sort();
+
+        setDepartements(uniqueDepartements);
       } catch (err) {
-        console.error("Erreur récupération artisans :", err);
-        setArtisans([]);
+        console.error("Erreur chargement artisans :", err);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchArtisans();
-  }, [query, category, location.pathname]);
+    loadArtisans();
+  }, [id]);
 
-  // Affichage étoiles
-  const renderStars = (note) => {
-    const rounded = Math.round(note);
-    return (
-      <>
-        {[...Array(5)].map((_, i) => (
-          <span key={i} className={i < rounded ? "text-warning" : "text-muted"}>
-            ★
-          </span>
-        ))}
-        <span className="ms-2 small text-muted">{note}/5</span>
-      </>
-    );
+  // Filtrage par département et ville
+  const handleSearch = () => {
+    let results = artisans;
+
+    if (departement !== "Tous") {
+      results = results.filter(
+        (a) => normalize(a.departement) === normalize(departement)
+      );
+    }
+
+    if (ville.trim() !== "") {
+      results = results.filter((a) =>
+        normalize(a.ville).includes(normalize(ville))
+      );
+    }
+
+    setFilteredArtisans(results);
   };
 
   if (loading) return <p className="text-center py-5">Chargement...</p>;
-
-  if (artisans.length === 0)
-    return <p className="text-center py-5">Aucun artisan trouvé.</p>;
+  if (!artisans.length) return <p className="text-center py-5">Aucun artisan trouvé.</p>;
 
   return (
     <div className="container py-4">
-      <h2 className="fw-bold mb-4">
-        {category
-          ? `Artisans dans la catégorie "${category}"`
-          : query
-          ? `Résultats pour "${query}"`
-          : "Tous les artisans"}
-      </h2>
+      <h2 className="fw-bold mb-4">Artisans dans la catégorie "{id}"</h2>
 
-      <div className="row g-4">
-        {artisans.map((artisan) => (
-          <div className="col-12 col-md-6 col-lg-4" key={artisan.id}>
-            <Link
-              to={`/artisan/${artisan.id}`}
-              className="text-decoration-none"
+      <div className="row">
+        {/* FILTRES */}
+        <aside className="col-md-3 mb-4">
+          <div className="border rounded p-3 bg-light">
+            <h6 className="fw-bold mb-3">Filtrer les résultats</h6>
+
+            <div className="mb-3">
+              <label className="form-label small">Département</label>
+              <select
+                className="form-select form-select-sm"
+                value={departement}
+                onChange={(e) => setDepartement(e.target.value)}
+              >
+                <option value="Tous">Tous</option>
+                {departements.map((dep) => (
+                  <option key={dep} value={dep}>
+                    {dep}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label small">Ville</label>
+              <input
+                type="text"
+                className="form-control form-control-sm"
+                placeholder="Ex : Lyon"
+                value={ville}
+                onChange={(e) => setVille(e.target.value)}
+              />
+            </div>
+
+            <button
+              className="btn btn-primary btn-sm w-100"
+              onClick={handleSearch}
             >
-              <div className="card shadow-sm h-100">
-                <img
-                  src={artisan.image}
-                  alt={artisan.nom}
-                  className="card-img-top"
-                  style={{ height: "200px", objectFit: "cover" }}
-                />
-                <div className="card-body">
-                  <h5 className="card-title text-blue">{artisan.nom}</h5>
-                  <p className="mb-1">{renderStars(artisan.note)}</p>
-                  <p className="mb-1">
-                    <strong>Spécialité:</strong> {artisan.specialite || "Indisponible"}
-                  </p>
-                  <p className="mb-0">
-                    <strong>Localisation:</strong>{" "}
-                    {artisan.ville} {artisan.departement && `(${artisan.departement})`}
-                  </p>
-                </div>
-              </div>
-            </Link>
+              Rechercher
+            </button>
           </div>
-        ))}
+        </aside>
+
+        {/* LISTE */}
+        <section className="col-md-9">
+          <div className="row g-4">
+            {filteredArtisans.map((artisan) => (
+              <ArtisanCard
+                key={artisan.id}
+                id={artisan.id}
+                title={artisan.nom}
+                job={artisan.specialite}
+                city={artisan.ville}
+                note={artisan.note}
+                image={artisan.image}
+              />
+            ))}
+          </div>
+        </section>
       </div>
     </div>
   );
