@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import ArtisanCard from "../components/artisan/ArtisanCard";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function Recherche() {
-  // ✅ États
+  const [params] = useSearchParams();
+  const query = params.get("query") || "";
+
+  // 🔹 États
   const [artisans, setArtisans] = useState([]);
   const [filteredArtisans, setFilteredArtisans] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -16,21 +20,15 @@ export default function Recherche() {
 
   const [loading, setLoading] = useState(true);
 
-        
-// 🔹 Chargement des artisans depuis le backend
+  // 🔹 Chargement initial : tous les artisans
   useEffect(() => {
     async function loadArtisans() {
       try {
-        // Si une recherche spécifique par mot clé
-        let data;
-        if (query) {
-          const res = await fetch(`${import.meta.env.VITE_API_URL}/api/artisans/search?query=${encodeURIComponent(query)}`);
-          data = await res.json();
-        } else {
-          // Sinon récupérer tous les artisans
         const res = await fetch(`${API_URL}/api/artisans`);
-        data = await res.json();        }
-        // Normalisation
+        if (!res.ok) throw new Error("Erreur API artisans");
+
+        const data = await res.json();
+
         const normalizedData = data.map((a) => ({
           id: a.id,
           nom: a.nom,
@@ -42,16 +40,14 @@ export default function Recherche() {
           image: a.image || "/images/placeholder.jpg",
         }));
 
-        // ✅ Affichage initial = tous les artisans
         setArtisans(normalizedData);
         setFilteredArtisans(normalizedData);
 
-        // Filtres dynamiques
         setCategories(
-          [...new Set(normalizedData.map((a) => a.categorie).filter(Boolean))].sort()
+          [...new Set(normalizedData.map(a => a.categorie).filter(Boolean))].sort()
         );
         setDepartements(
-          [...new Set(normalizedData.map((a) => a.departement).filter(Boolean))].sort()
+          [...new Set(normalizedData.map(a => a.departement).filter(Boolean))].sort()
         );
       } catch (error) {
         console.error("Erreur chargement artisans :", error);
@@ -67,9 +63,28 @@ export default function Recherche() {
   const normalize = (str = "") =>
     str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-  // 🔹 Application des filtres
+  // 🔹 Synchronisation avec la recherche du Header (nom uniquement)
+  useEffect(() => {
+    let results = artisans;
+
+    if (query.trim()) {
+      results = results.filter((a) =>
+        normalize(a.nom).includes(normalize(query))
+      );
+    }
+
+    setFilteredArtisans(results);
+  }, [query, artisans]);
+
+  // 🔹 Application des filtres manuels
   const handleSearch = () => {
     let results = artisans;
+
+    if (query.trim()) {
+      results = results.filter((a) =>
+        normalize(a.nom).includes(normalize(query))
+      );
+    }
 
     if (categorie !== "Tous") {
       results = results.filter(
@@ -83,7 +98,7 @@ export default function Recherche() {
       );
     }
 
-    if (ville.trim() !== "") {
+    if (ville.trim()) {
       results = results.filter((a) =>
         normalize(a.ville).includes(normalize(ville))
       );
@@ -92,11 +107,15 @@ export default function Recherche() {
     setFilteredArtisans(results);
   };
 
-  if (loading) return <p className="text-center py-5">Chargement...</p>;
+  if (loading) {
+    return <p className="text-center py-5">Chargement...</p>;
+  }
 
   return (
     <div className="container py-4">
-      <h2 className="fw-bold mb-4">Rechercher un artisan</h2>
+      <h2 className="fw-bold mb-4">
+        {query ? `Résultats pour « ${query} »` : "Tous les artisans"}
+      </h2>
 
       <div className="row">
         {/* FILTRES */}
@@ -138,7 +157,22 @@ export default function Recherche() {
               </select>
             </div>
 
-            <button className="btn btn-primary btn-sm w-100" onClick={handleSearch}>
+            {/* Ville */}
+            <div className="mb-3">
+              <label className="form-label small">Ville</label>
+              <input
+                type="text"
+                className="form-control form-control-sm"
+                placeholder="Ex : Lyon"
+                value={ville}
+                onChange={(e) => setVille(e.target.value)}
+              />
+            </div>
+
+            <button
+              className="btn btn-primary btn-sm w-100"
+              onClick={handleSearch}
+            >
               Rechercher
             </button>
           </div>
