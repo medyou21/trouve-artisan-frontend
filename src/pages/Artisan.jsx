@@ -9,6 +9,7 @@ export default function Artisan() {
   const [sending, setSending] = useState(false);
   const [contactMessage, setContactMessage] = useState("");
 
+  // 🔹 Fetch artisan depuis le backend
   useEffect(() => {
     async function fetchArtisan() {
       try {
@@ -31,6 +32,7 @@ export default function Artisan() {
     fetchArtisan();
   }, [id]);
 
+  // 🔹 Affichage des étoiles pour la note
   const renderStars = (note) => {
     const rounded = Math.round(note);
     return (
@@ -45,9 +47,11 @@ export default function Artisan() {
     );
   };
 
+  // 🔹 Envoi du formulaire de contact
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!artisan) return;
+
     const API_URL = import.meta.env.VITE_API_URL;
     const formData = new FormData(e.target);
     const payload = Object.fromEntries(formData.entries());
@@ -60,8 +64,11 @@ export default function Artisan() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
+      if (!res.ok) throw new Error(`Erreur serveur (${res.status})`);
+
       const data = await res.json();
-      setContactMessage(data.message);
+      setContactMessage(data.message || "Message envoyé avec succès !");
       e.target.reset();
     } catch (err) {
       console.error(err);
@@ -167,7 +174,9 @@ export default function Artisan() {
               </button>
 
               {contactMessage && (
-                <p className="mt-2 text-success">{contactMessage}</p>
+                <p className={`mt-2 ${sending ? "text-muted" : "text-success"}`}>
+                  {contactMessage}
+                </p>
               )}
             </form>
           ) : (
