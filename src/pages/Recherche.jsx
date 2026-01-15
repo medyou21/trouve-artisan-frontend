@@ -8,9 +8,12 @@ const API_URL = import.meta.env.VITE_API_URL;
 export default function Recherche() {
   const [params] = useSearchParams();
   const query = params.get("query") || "";
+
+  // ✅ États du composant
   const [artisans, setArtisans] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // 🔹 Fetch des résultats depuis l'API
   useEffect(() => {
     async function fetchResults() {
       setLoading(true);
@@ -28,12 +31,12 @@ export default function Recherche() {
 
         const data = await res.json();
 
-        // ✅ Normalisation MariaDB
+        // ✅ Normalisation des données
         const normalizedData = data.map((a) => ({
           id: a.id,
           nom: a.nom,
           specialite: a.specialite,
-          ville: a.ville,
+          ville: a.ville || "Indisponible",
           note: Number(a.note) || 0,
           image: a.image || "/images/placeholder.jpg",
         }));
@@ -52,10 +55,9 @@ export default function Recherche() {
 
   return (
     <div className="container py-4">
+      {/* 🔹 SEO dynamique avec React Helmet */}
       <Helmet>
-        <title>
-          Recherche{query ? ` : ${query}` : ""}
-        </title>
+        <title>Recherche{query ? ` : ${query}` : ""}</title>
         <meta
           name="description"
           content={
@@ -70,12 +72,13 @@ export default function Recherche() {
         {query ? `Résultats pour « ${query} »` : "Tous les artisans"}
       </h2>
 
-      {loading && <p>Chargement...</p>}
-
+      {/* 🔹 États de chargement et résultats vides */}
+      {loading && <p className="text-center">Chargement...</p>}
       {!loading && artisans.length === 0 && (
-        <p>Aucun artisan trouvé.</p>
+        <p className="text-center">Aucun artisan trouvé.</p>
       )}
 
+      {/* 🔹 Liste des artisans */}
       <div className="row g-4">
         {artisans.map((artisan) => (
           <ArtisanCard

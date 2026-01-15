@@ -3,6 +3,7 @@ import ArtisanCard from "../components/artisan/ArtisanCard";
 import { getArtisansByCategorie } from "../services/artisan.service";
 
 export default function Services() {
+  // ✅ États pour gérer les données et filtres
   const [artisans, setArtisans] = useState([]);
   const [filteredArtisans, setFilteredArtisans] = useState([]);
   const [departements, setDepartements] = useState([]);
@@ -10,18 +11,19 @@ export default function Services() {
   const [departement, setDepartement] = useState("Tous");
   const [ville, setVille] = useState("");
 
+  // 🔹 Chargement des artisans au montage du composant
   useEffect(() => {
     async function loadArtisans() {
       try {
         const data = await getArtisansByCategorie("Services");
 
-        // ✅ Normalisation MariaDB
+        // ✅ Normalisation des données
         const normalizedData = data.map((a) => ({
           id: a.id,
           nom: a.nom,
           specialite: a.specialite,
-          ville: a.ville,
-          departement: a.departement,
+          ville: a.ville || "",
+          departement: a.departement || "",
           note: Number(a.note) || 0,
           image: a.image || "/images/placeholder.jpg",
         }));
@@ -29,6 +31,7 @@ export default function Services() {
         setArtisans(normalizedData);
         setFilteredArtisans(normalizedData);
 
+        // 🔹 Extraire les départements uniques pour le filtre
         const uniqueDepartements = [
           ...new Set(normalizedData.map((a) => a.departement).filter(Boolean)),
         ].sort();
@@ -44,39 +47,44 @@ export default function Services() {
     loadArtisans();
   }, []);
 
- const normalize = (str = "") =>
-  str
-    .normalize("NFD")              // sépare lettres et accents
-    .replace(/[\u0300-\u036f]/g, "") // supprime les accents
-    .toLowerCase();
+  // 🔹 Fonction utilitaire pour normaliser texte (accent, majuscule)
+  const normalize = (str = "") =>
+    str
+      .normalize("NFD") // sépare lettres et accents
+      .replace(/[\u0300-\u036f]/g, "") // supprime les accents
+      .toLowerCase();
 
+  // 🔹 Filtrage des artisans selon département et ville
   const handleSearch = () => {
     let results = artisans;
 
-     if (departement !== "Tous") {
-    results = results.filter(
-      (a) => normalize(a.departement) === normalize(departement)
-    );
-  }
+    if (departement !== "Tous") {
+      results = results.filter(
+        (a) => normalize(a.departement) === normalize(departement)
+      );
+    }
 
-  if (ville.trim() !== "") {
-    results = results.filter((a) =>
-      normalize(a.ville).includes(normalize(ville))
-    );
-  }
+    if (ville.trim() !== "") {
+      results = results.filter((a) =>
+        normalize(a.ville).includes(normalize(ville))
+      );
+    }
 
     setFilteredArtisans(results);
-     // ✅ Réinitialisation des filtres
-  setDepartement("Tous");
-  setVille("");
+
+    // 🔹 Réinitialisation des filtres après recherche
+    setDepartement("Tous");
+    setVille("");
   };
 
+  // 🔹 Affichage pendant le chargement
   if (loading) {
     return <p className="text-center py-5">Chargement...</p>;
   }
 
   return (
     <div className="container py-4">
+      {/* Breadcrumb */}
       <p className="small text-muted">
         Accueil / <strong>Services</strong>
       </p>
@@ -89,6 +97,7 @@ export default function Services() {
           <div className="border rounded p-3 bg-light">
             <h6 className="fw-bold mb-3">Filtrer les résultats</h6>
 
+            {/* Filtre Département */}
             <div className="mb-3">
               <label className="form-label small">Département</label>
               <select
@@ -105,6 +114,7 @@ export default function Services() {
               </select>
             </div>
 
+            {/* Filtre Ville */}
             <div className="mb-3">
               <label className="form-label small">Ville</label>
               <input
@@ -125,7 +135,7 @@ export default function Services() {
           </div>
         </aside>
 
-        {/* LISTE */}
+        {/* LISTE DES ARTISANS */}
         <section className="col-md-9">
           <div className="card shadow-sm mb-4">
             <div className="card-body">
