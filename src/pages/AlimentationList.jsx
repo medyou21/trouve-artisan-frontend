@@ -107,12 +107,12 @@ export default function Services() {
       {/* Fil d'Ariane */}
       <nav aria-label="Fil d’Ariane">
         <p className="small text-muted">
-         <NavLink
+         <Link
                 to="/"
                 className="nav-link"
                              >
                 Accueil
-              </NavLink> / <strong>Alimentation</strong>
+              </Link> / <strong>Alimentation</strong>
         </p>
       </nav>
 

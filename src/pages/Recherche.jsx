@@ -16,13 +16,20 @@ export default function Recherche() {
 
   const [loading, setLoading] = useState(true);
 
-  // 🔹 Chargement INITIAL : TOUS les artisans
+        
+// 🔹 Chargement des artisans depuis le backend
   useEffect(() => {
     async function loadArtisans() {
       try {
+        // Si une recherche spécifique par mot clé
+        let data;
+        if (query) {
+          const res = await fetch(`${import.meta.env.VITE_API_URL}/api/artisans/search?query=${encodeURIComponent(query)}`);
+          data = await res.json();
+        } else {
+          // Sinon récupérer tous les artisans
         const res = await fetch(`${API_URL}/api/artisans`);
-        const data = await res.json();
-
+        data = await res.json();        }
         // Normalisation
         const normalizedData = data.map((a) => ({
           id: a.id,
