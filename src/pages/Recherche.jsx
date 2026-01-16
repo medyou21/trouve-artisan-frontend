@@ -91,11 +91,11 @@ export default function Recherche() {
       );
     }
 
-    if (departement !== "Tous") {
-      results = results.filter(
-        (a) => normalize(a.departement) === normalize(departement)
-      );
-    }
+   if (departement !== "Tous") {
+  results = results.filter(
+    (a) => a.departement && a.departement.id === Number(departement)
+  );
+}
 
     if (ville.trim()) {
       results = results.filter((a) =>
@@ -145,9 +145,7 @@ export default function Recherche() {
   <select
   className="form-select form-select-sm"
   value={departement?.id || "Tous"}
-  onChange={(e) => setDepartement(
-    departements.find(d => d.id === Number(e.target.value)) || "Tous"
-  )}
+  onChange={(e) => setDepartement(e.target.value)}
 >
   <option value="Tous">Tous</option>
   {departements.map((dep) => (
@@ -156,6 +154,7 @@ export default function Recherche() {
     </option>
   ))}
 </select>
+
 
 </div>
 
