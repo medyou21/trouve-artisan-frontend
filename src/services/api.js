@@ -22,15 +22,19 @@ export async function getTopArtisans() {
     const data = await response.json();
 
     // 🔹 Normalisation des données pour correspondre aux relations Sequelize
-    const normalizedData = data.map((a) => ({
-      id: a.id,
-      nom: a.nom || "Indisponible",
-      specialite: a.specialite_obj?.nom || "Non précisée",
-      ville: a.ville_obj?.nom || "Indisponible",
-      departement: a.departement_obj?.nom || "",
-      categorie: a.categorie?.nom || "",
-      note: Number(a.note) || 0,
-      image: a.image || "/images/placeholder.jpg",
+    const normalizedData = data.map((artisan) => ({
+      id: artisan.id,
+      nom: artisan.nom || "Indisponible",
+      specialite: artisan.specialite_obj?.nom || "Non précisée",
+      ville: artisan.ville_obj?.nom || "Indisponible",
+      departement: artisan.ville_obj?.departement?.nom || artisan.departement_obj?.nom || "",
+      categorie: artisan.categorie?.nom || "",
+      note: Number(artisan.note) || 0,
+      image: artisan.image || "/images/placeholder.jpg",
+      email: artisan.email || "",
+      site_web: artisan.site_web || "",
+      a_propos: artisan.a_propos || "",
+      top: artisan.top || false,
     }));
 
     return normalizedData;
