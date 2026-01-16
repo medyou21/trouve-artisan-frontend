@@ -3,16 +3,14 @@ import ArtisanCard from "../artisan/ArtisanCard";
 import { getTopArtisans } from "../../services/api";
 
 /**
- * Section affichant les artisans mis en avant (artisans du mois)
+ * Section affichant les artisans mis en avant (top artisans)
  */
 export default function FeaturedArtisans() {
   const [artisans, setArtisans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  /**
-   * Récupération des artisans "top" depuis l’API
-   */
+  // 🔹 Récupération des artisans "top" depuis l’API
   useEffect(() => {
     async function fetchArtisans() {
       try {
@@ -35,7 +33,6 @@ export default function FeaturedArtisans() {
   }, []);
 
   /* ---------- États UI ---------- */
-
   if (loading) {
     return (
       <p className="text-center py-5" role="status">
@@ -61,7 +58,6 @@ export default function FeaturedArtisans() {
   }
 
   /* ---------- Rendu principal ---------- */
-
   return (
     <section
       className="py-5"
@@ -81,8 +77,9 @@ export default function FeaturedArtisans() {
               key={artisan.id}
               id={artisan.id}
               title={artisan.nom}
-              job={artisan.Specialite?.nom ?? "Spécialité non renseignée"}
-              city={artisan.Ville?.nom ?? "Ville inconnue"}
+              job={artisan.specialite_obj?.nom || "–"}       // spécialité
+              city={artisan.ville_obj?.nom || "–"}           // ville
+              
               image={artisan.image}
               note={artisan.note}
             />
