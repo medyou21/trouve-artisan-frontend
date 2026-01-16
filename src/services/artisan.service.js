@@ -33,10 +33,14 @@ export async function getArtisansByCategorie(categorieId) {
       nom: a.nom || "Indisponible",
       specialite: a.specialite_obj?.nom || "Non précisée",
       ville: a.ville_obj?.nom || "Indisponible",
-      departement: a.departement_obj?.nom || "",
+      departement: a.ville_obj?.departement?.nom || a.departement_obj?.nom || "",
       categorie: a.categorie?.nom || "",
       note: Number(a.note) || 0,
       image: a.image || "/images/placeholder.jpg",
+      email: a.email || "",
+      site_web: a.site_web || "",
+      a_propos: a.a_propos || "",
+      top: a.top || false,
     }));
 
     return normalizedData;
