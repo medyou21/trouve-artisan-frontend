@@ -6,6 +6,8 @@ import { Link } from "react-router-dom";
  * @param {string} title - Nom de l’artisan
  * @param {string} job - Spécialité
  * @param {string} city - Ville
+ * @param {string} department - Département
+ * @param {string} category - Catégorie
  * @param {string} image - URL de l’image
  * @param {number} note - Note sur 5
  */
@@ -14,6 +16,8 @@ export default function ArtisanCard({
   title,
   job,
   city,
+  department,
+  category,
   image,
   note,
 }) {
@@ -60,6 +64,16 @@ export default function ArtisanCard({
           {/* Spécialité */}
           <p className="mb-1 text-blue">
             {job || "Spécialité indisponible"}
+          </p>
+
+          {/* Catégorie */}
+          <p className="mb-1 text-secondary">
+            Catégorie: {category || "Inconnue"}
+          </p>
+
+          {/* Département */}
+          <p className="mb-1 text-secondary">
+            Département: {department || "Inconnu"}
           </p>
 
           <hr />
