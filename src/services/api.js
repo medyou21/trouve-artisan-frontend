@@ -1,7 +1,7 @@
 const API_URL = import.meta.env.VITE_API_URL;
 
 /**
- * 🔹 Récupère les artisans les mieux notés depuis l'API.
+ * 🔹 Récupère les artisans "top" depuis l'API.
  * @returns {Promise<Array>} Liste des artisans normalisés
  */
 export async function getTopArtisans() {
@@ -21,13 +21,14 @@ export async function getTopArtisans() {
 
     const data = await response.json();
 
-    // 🔹 Normalisation des données pour éviter les valeurs nulles ou mal formatées
+    // 🔹 Normalisation des données pour correspondre aux relations Sequelize
     const normalizedData = data.map((a) => ({
       id: a.id,
       nom: a.nom || "Indisponible",
-      specialite: a.specialite || "Non précisée",
-      ville: a.ville || "Indisponible",
-      departement: a.departement || "",
+      specialite: a.specialite_obj?.nom || "Non précisée",
+      ville: a.ville_obj?.nom || "Indisponible",
+      departement: a.departement_obj?.nom || "",
+      categorie: a.categorie?.nom || "",
       note: Number(a.note) || 0,
       image: a.image || "/images/placeholder.jpg",
     }));
