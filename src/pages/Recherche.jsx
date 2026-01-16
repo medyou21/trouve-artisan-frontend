@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import ArtisanCard from "../components/artisan/ArtisanCard";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { getArtisansByCategorie } from "../services/artisan.service";
 
 export default function Recherche() {
   const [params] = useSearchParams();
   const query = params.get("query") || "";
 
-  // 🔹 États
   const [artisans, setArtisans] = useState([]);
   const [filteredArtisans, setFilteredArtisans] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -20,35 +18,35 @@ export default function Recherche() {
 
   const [loading, setLoading] = useState(true);
 
+  // 🔹 Normalisation texte pour comparaison
+  const normalize = (str = "") =>
+    str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
   // 🔹 Chargement initial : tous les artisans
   useEffect(() => {
     async function loadArtisans() {
       try {
-        const res = await fetch(`${API_URL}/api/artisans`);
-        if (!res.ok) throw new Error("Erreur API artisans");
+        // On charge toutes les catégories d’abord
+        const categoriesRes = await fetch(`${import.meta.env.VITE_API_URL}/api/categories`);
+        const categoriesData = await categoriesRes.json();
 
-        const data = await res.json();
+        setCategories(categoriesData.map((c) => ({ id: c.id, nom: c.nom })));
 
-        const normalizedData = data.map((a) => ({
-          id: a.id,
-          nom: a.nom,
-          specialite: a.specialite,
-          ville: a.ville || "",
-          departement: a.departement || "",
-          categorie: a.categorie || "",
-          note: Number(a.note) || 0,
-          image: a.image || "/images/placeholder.jpg",
-        }));
+        // Pour chaque catégorie, on récupère les artisans
+        let allArtisans = [];
+        for (const cat of categoriesData) {
+          const catArtisans = await getArtisansByCategorie(cat.id);
+          allArtisans = [...allArtisans, ...catArtisans];
+        }
 
-        setArtisans(normalizedData);
-        setFilteredArtisans(normalizedData);
+        setArtisans(allArtisans);
+        setFilteredArtisans(allArtisans);
 
-        setCategories(
-          [...new Set(normalizedData.map(a => a.categorie).filter(Boolean))].sort()
-        );
-        setDepartements(
-          [...new Set(normalizedData.map(a => a.departement).filter(Boolean))].sort()
-        );
+        // Départements uniques pour le filtre
+        const uniqueDepartements = [
+          ...new Set(allArtisans.map((a) => a.departement).filter(Boolean)),
+        ].sort();
+        setDepartements(uniqueDepartements);
       } catch (error) {
         console.error("Erreur chargement artisans :", error);
       } finally {
@@ -59,11 +57,7 @@ export default function Recherche() {
     loadArtisans();
   }, []);
 
-  // 🔹 Normalisation texte
-  const normalize = (str = "") =>
-    str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-
-  // 🔹 Synchronisation avec la recherche du Header (nom uniquement)
+  // 🔹 Filtrage automatique par query
   useEffect(() => {
     let results = artisans;
 
@@ -78,7 +72,7 @@ export default function Recherche() {
 
   // 🔹 Application des filtres manuels
   const handleSearch = () => {
-    let results = artisans;
+    let results = [...artisans];
 
     if (query.trim()) {
       results = results.filter((a) =>
@@ -133,8 +127,8 @@ export default function Recherche() {
               >
                 <option value="Tous">Toutes</option>
                 {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
+                  <option key={cat.id} value={cat.nom}>
+                    {cat.nom}
                   </option>
                 ))}
               </select>
@@ -157,12 +151,19 @@ export default function Recherche() {
               </select>
             </div>
 
-           
+            {/* Ville */}
+            <div className="mb-3">
+              <label className="form-label small">Ville</label>
+              <input
+                type="text"
+                className="form-control form-control-sm"
+                value={ville}
+                onChange={(e) => setVille(e.target.value)}
+                placeholder="Ex : Lyon"
+              />
+            </div>
 
-            <button
-              className="btn btn-primary btn-sm w-100"
-              onClick={handleSearch}
-            >
+            <button className="btn btn-primary btn-sm w-100" onClick={handleSearch}>
               Rechercher
             </button>
           </div>
@@ -174,6 +175,12 @@ export default function Recherche() {
             {filteredArtisans.length} artisan
             {filteredArtisans.length > 1 ? "s" : ""}
           </p>
+
+          {filteredArtisans.length === 0 && (
+            <p className="text-center text-muted py-4">
+              Aucun artisan ne correspond à votre recherche.
+            </p>
+          )}
 
           <div className="row g-4">
             {filteredArtisans.map((artisan) => (
