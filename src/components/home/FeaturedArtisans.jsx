@@ -18,7 +18,6 @@ export default function FeaturedArtisans() {
       try {
         const data = await getTopArtisans();
 
-        // Sécurité : on vérifie que la réponse est bien un tableau
         if (!Array.isArray(data)) {
           throw new Error("Format de données invalide");
         }
@@ -82,8 +81,8 @@ export default function FeaturedArtisans() {
               key={artisan.id}
               id={artisan.id}
               title={artisan.nom}
-              job={artisan.specialite}
-              city={artisan.ville}
+              job={artisan.Specialite?.nom ?? "Spécialité non renseignée"}
+              city={artisan.Ville?.nom ?? "Ville inconnue"}
               image={artisan.image}
               note={artisan.note}
             />
