@@ -16,8 +16,7 @@ export default function ArtisanCard({
   title,
   job,
   city,
-  department,
-  category,
+ 
   image,
   note,
 }) {
