@@ -77,8 +77,8 @@ export default function FeaturedArtisans() {
               key={artisan.id}
               id={artisan.id}
               title={artisan.nom}
-              job={artisan.specialite_obj?.nom || "–"}       // spécialité
-              city={artisan.ville_obj?.nom || "–"}           // ville
+              job={artisan.specialite_obj?.nom || "Spécialité non renseignée"}       // spécialité
+              city={artisan.ville_obj?.nom || "ville non renseignée"}           // ville
               
               image={artisan.image}
               note={artisan.note}
