@@ -66,16 +66,7 @@ export default function ArtisanCard({
             {job || "Spécialité indisponible"}
           </p>
 
-          {/* Catégorie */}
-          <p className="mb-1 text-secondary">
-            Catégorie: {category || "Inconnue"}
-          </p>
-
-          {/* Département */}
-          <p className="mb-1 text-secondary">
-            Département: {department || "Inconnu"}
-          </p>
-
+        
           <hr />
 
           {/* Ville */}
