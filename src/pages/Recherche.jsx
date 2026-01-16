@@ -40,11 +40,15 @@ export default function Recherche() {
           [...new Set(data.map(a => a.categorie).filter(Boolean))].sort()
         );
 
-       setDepartements(
-          [...new Map(data.map(a => a.ville_obj?.departement).filter(Boolean).map(d => [d.id, d])) 
-          // Map pour éviter les doublons par id
-          ].values()
-);
+        // 🔹 Départements uniques (objets {id, code, nom})
+      const depMap = new Map();
+      data.forEach(a => {
+        if (a.ville_obj?.departement) {
+          const dep = a.ville_obj.departement;
+          depMap.set(dep.id, dep); // clé unique = id
+        }
+      });
+      setDepartements(Array.from(depMap.values()).sort((a, b) => a.nom.localeCompare(b.nom)));
 
       } catch (error) {
         console.error("Erreur chargement artisans :", error);
