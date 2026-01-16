@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import ArtisanCard from "../components/artisan/ArtisanCard";
-import { getArtisansByCategorie } from "../services/artisan.service";
+import { getAllArtisans } from "../services/artisan.service";
 
 export default function Recherche() {
   const [params] = useSearchParams();
@@ -21,39 +21,27 @@ export default function Recherche() {
 
   // 🔹 Normalisation texte
   const normalize = (str = "") =>
-    str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    str
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
 
-  // 🔹 Chargement initial : tous les artisans
+  // 🔹 Chargement initial via SERVICE
   useEffect(() => {
     async function loadArtisans() {
       try {
-        // Ici on peut charger tous les artisans ou par catégorie si nécessaire
-        const data = await fetch(`${import.meta.env.VITE_API_URL}/api/artisans`)
-          .then(res => res.json());
+        const data = await getAllArtisans();
 
-        // 🔹 Normalisation et récupération des relations
-      const normalizedData = data.map((a) => ({
-  id: a.id,
-  nom: a.nom || "Indisponible",
-  specialite: a.specialite_obj?.nom || "Non précisée",
-  ville: a.ville_obj?.nom || "Indisponible",
-  departement: a.ville_obj?.departement?.nom || "",
-  categorie: a.categorie?.nom || "",
-  note: Number(a.note) || 0,
-  image: a.image || "/images/placeholder.jpg",
-}));
+        setArtisans(data);
+        setFilteredArtisans(data);
 
-
-        setArtisans(normalizedData);
-        setFilteredArtisans(normalizedData);
-
-        // 🔹 Liste unique des catégories et départements
+        // 🔹 Filtres dynamiques
         setCategories(
-          [...new Set(normalizedData.map(a => a.categorie).filter(Boolean))].sort()
+          [...new Set(data.map(a => a.categorie).filter(Boolean))].sort()
         );
 
         setDepartements(
-          [...new Set(normalizedData.map(a => a.departement).filter(Boolean))].sort()
+          [...new Set(data.map(a => a.departement).filter(Boolean))].sort()
         );
       } catch (error) {
         console.error("Erreur chargement artisans :", error);
@@ -65,7 +53,7 @@ export default function Recherche() {
     loadArtisans();
   }, []);
 
-  // 🔹 Synchronisation avec la recherche du header (nom)
+  // 🔹 Synchronisation avec la recherche (header)
   useEffect(() => {
     let results = artisans;
 
@@ -120,7 +108,7 @@ export default function Recherche() {
       </h2>
 
       <div className="row">
-        {/* FILTRES */}
+        {/* 🔹 FILTRES */}
         <aside className="col-md-3 mb-4">
           <div className="border rounded p-3 bg-light">
             <h6 className="fw-bold mb-3">Filtres</h6>
@@ -180,7 +168,7 @@ export default function Recherche() {
           </div>
         </aside>
 
-        {/* LISTE DES ARTISANS */}
+        {/* 🔹 LISTE */}
         <section className="col-md-9">
           <p className="small text-muted mb-3">
             {filteredArtisans.length} artisan
