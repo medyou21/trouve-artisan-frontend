@@ -20,7 +20,9 @@ function normalizeArtisan(a) {
     nom: a.nom || "Indisponible",
     specialite: a.specialite_obj?.nom || "Non précisée",
     ville: a.ville_obj?.nom || "Indisponible",
-    departement: a.ville_obj?.departement?.nom  || "",
+    departement: a.ville_obj?.departement
+      ? { id: a.ville_obj.departement.id, code: a.ville_obj.departement.code, nom: a.ville_obj.departement.nom }
+      : null,
     categorie: a.categorie?.nom || "",
     note: Number(a.note) || 0,
     image: a.image || "/images/placeholder.jpg",
@@ -30,6 +32,7 @@ function normalizeArtisan(a) {
     top: Boolean(a.top),
   };
 }
+
 
 /**
  * 🔹 Tous les artisans
