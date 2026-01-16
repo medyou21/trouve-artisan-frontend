@@ -40,9 +40,12 @@ export default function Recherche() {
           [...new Set(data.map(a => a.categorie).filter(Boolean))].sort()
         );
 
-        setDepartements(
-          [...new Set(data.map(a => a.departement).filter(Boolean))].sort()
-        );
+       setDepartements(
+          [...new Map(data.map(a => a.ville_obj?.departement).filter(Boolean).map(d => [d.id, d])) 
+          // Map pour éviter les doublons par id
+          ].values()
+);
+
       } catch (error) {
         console.error("Erreur chargement artisans :", error);
       } finally {
@@ -131,21 +134,21 @@ export default function Recherche() {
             </div>
 
             {/* Département */}
-            <div className="mb-3">
-              <label className="form-label small">Département</label>
-              <select
-                className="form-select form-select-sm"
-                value={departement}
-                onChange={(e) => setDepartement(e.target.value)}
-              >
-                <option value="Tous">Tous</option>
-                {departements.map((dep) => (
-                  <option key={dep} value={dep}>
-                    {dep}
-                  </option>
-                ))}
-              </select>
-            </div>
+<div className="mb-3">
+  <label className="form-label small">Département</label>
+  <select
+    className="form-select form-select-sm"
+    value={departement}
+    onChange={(e) => setDepartement(e.target.value)}
+  >
+    <option value="Tous">Tous</option>
+    {departements.map((dep) => (
+      <option key={dep.id} value={dep.id}>
+        {dep.code} - {dep.nom}
+      </option>
+    ))}
+  </select>
+</div>
 
             {/* Ville */}
             <div className="mb-3">
