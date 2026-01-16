@@ -32,16 +32,17 @@ export default function Recherche() {
           .then(res => res.json());
 
         // 🔹 Normalisation et récupération des relations
-        const normalizedData = data.map((a) => ({
-          id: a.id,
-          nom: a.nom || "Indisponible",
-          specialite: a.specialite_obj?.nom || "Non précisée",
-          ville: a.ville_obj?.nom || "Indisponible",
-          departement: a.departement_obj?.nom || "",
-          categorie: a.categorie?.nom || "",
-          note: Number(a.note) || 0,
-          image: a.image || "/images/placeholder.jpg",
-        }));
+      const normalizedData = data.map((a) => ({
+  id: a.id,
+  nom: a.nom || "Indisponible",
+  specialite: a.specialite_obj?.nom || "Non précisée",
+  ville: a.ville_obj?.nom || "Indisponible",
+  departement: a.ville_obj?.departement?.nom || "",
+  categorie: a.categorie?.nom || "",
+  note: Number(a.note) || 0,
+  image: a.image || "/images/placeholder.jpg",
+}));
+
 
         setArtisans(normalizedData);
         setFilteredArtisans(normalizedData);
