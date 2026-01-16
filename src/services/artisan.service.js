@@ -20,10 +20,7 @@ function normalizeArtisan(a) {
     nom: a.nom || "Indisponible",
     specialite: a.specialite_obj?.nom || "Non précisée",
     ville: a.ville_obj?.nom || "Indisponible",
-    departement:
-      a.ville_obj?.departement?.nom ||
-      a.departement_obj?.nom ||
-      "",
+    departement: a.ville_obj?.departement?.nom  || "",
     categorie: a.categorie?.nom || "",
     note: Number(a.note) || 0,
     image: a.image || "/images/placeholder.jpg",
