@@ -41,13 +41,15 @@ export default function Recherche() {
         );
 
         // 🔹 Départements uniques (objets {id, code, nom})
-      const depMap = new Map();
+       const depMap = new Map();
       data.forEach(a => {
-        if (a.ville_obj?.departement) {
-          const dep = a.ville_obj.departement;
-          depMap.set(dep.id, dep); // clé unique = id
+        const dep = a.ville_obj?.departement;
+        if (dep) {
+          depMap.set(dep.id, dep); // id comme clé unique
         }
       });
+
+      // Convertir Map en tableau et trier
       setDepartements(Array.from(depMap.values()).sort((a, b) => a.nom.localeCompare(b.nom)));
 
       } catch (error) {
@@ -141,17 +143,17 @@ export default function Recherche() {
 <div className="mb-3">
   <label className="form-label small">Département</label>
   <select
-    className="form-select form-select-sm"
-    value={departement}
-    onChange={(e) => setDepartement(e.target.value)}
-  >
-    <option value="Tous">Tous</option>
-    {departements.map((dep) => (
-      <option key={dep.id} value={dep.id}>
-        {dep.code} - {dep.nom}
-      </option>
-    ))}
-  </select>
+  className="form-select form-select-sm"
+  value={departement}
+  onChange={(e) => setDepartement(e.target.value)}
+>
+  <option value="Tous">Tous</option>
+  {departements.map((dep) => (
+    <option key={dep.id} value={dep.id}>
+      {dep.code} - {dep.nom}
+    </option>
+  ))}
+</select>
 </div>
 
             {/* Ville */}
