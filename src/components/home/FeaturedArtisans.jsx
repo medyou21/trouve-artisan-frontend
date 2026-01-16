@@ -3,14 +3,13 @@ import ArtisanCard from "../artisan/ArtisanCard";
 import { getTopArtisans } from "../../services/api";
 
 /**
- * Section affichant les artisans mis en avant (top artisans)
+ * Section affichant les artisans mis en avant (artisans du mois)
  */
 export default function FeaturedArtisans() {
   const [artisans, setArtisans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 🔹 Récupération des artisans "top" depuis l’API
   useEffect(() => {
     async function fetchArtisans() {
       try {
@@ -32,42 +31,22 @@ export default function FeaturedArtisans() {
     fetchArtisans();
   }, []);
 
-  /* ---------- États UI ---------- */
   if (loading) {
-    return (
-      <p className="text-center py-5" role="status">
-        Chargement des artisans...
-      </p>
-    );
+    return <p className="text-center py-5" role="status">Chargement des artisans...</p>;
   }
 
   if (error) {
-    return (
-      <p className="text-center py-5 text-danger">
-        {error}
-      </p>
-    );
+    return <p className="text-center py-5 text-danger">{error}</p>;
   }
 
   if (artisans.length === 0) {
-    return (
-      <p className="text-center py-5">
-        Aucun artisan disponible pour le moment.
-      </p>
-    );
+    return <p className="text-center py-5">Aucun artisan disponible pour le moment.</p>;
   }
 
-  /* ---------- Rendu principal ---------- */
   return (
-    <section
-      className="py-5"
-      aria-labelledby="featured-artisans-title"
-    >
+    <section className="py-5" aria-labelledby="featured-artisans-title">
       <div className="container">
-        <h2
-          id="featured-artisans-title"
-          className="text-center text-blue fw-bold mb-4"
-        >
+        <h2 id="featured-artisans-title" className="text-center text-blue fw-bold mb-4">
           Les artisans du mois
         </h2>
 
@@ -77,9 +56,8 @@ export default function FeaturedArtisans() {
               key={artisan.id}
               id={artisan.id}
               title={artisan.nom}
-              job={artisan.specialite_obj?.nom || "Spécialité non renseignée"}       // spécialité
-              city={artisan.ville_obj?.nom || "ville non renseignée"}           // ville
-              
+              job={artisan.specialite}
+              city={artisan.ville}
               image={artisan.image}
               note={artisan.note}
             />
