@@ -41,15 +41,16 @@ export default function Recherche() {
         );
 
         // 🔹 Départements uniques avec id, code et nom
-        const uniqueDeps = [
-          ...new Map(
-            data
-              .map((a) => a.ville_obj?.departement)
-              .filter(Boolean)
-              .map((d) => [d.id, d])
-          ).values(),
-        ];
-        setDepartements(uniqueDeps);
+const uniqueDeps = Array.from(
+  new Map(
+    data
+      .map((a) => a.ville_obj?.departement)
+      .filter(Boolean)
+      .map((d) => [d.id, d])
+  ).values()
+);
+setDepartements(uniqueDeps);
+
       } catch (error) {
         console.error("Erreur chargement artisans :", error);
       } finally {
@@ -134,17 +135,18 @@ export default function Recherche() {
             <div className="mb-3">
               <label className="form-label small">Département</label>
               <select
-                className="form-select form-select-sm"
-                value={departement} // id ou "Tous"
-                onChange={(e) => setDepartement(e.target.value)}
-              >
-                <option value="Tous">Tous</option>
-                {departements.map((dep) => (
-                  <option key={dep.id} value={String(dep.id)}>
-                    {dep.code} - {dep.nom}
-                  </option>
-                ))}
-              </select>
+  className="form-select form-select-sm"
+  value={departement}
+  onChange={(e) => setDepartement(e.target.value)}
+>
+  <option value="Tous">Tous</option>
+  {departements.map((dep) => (
+    <option key={dep.id} value={String(dep.id)}>
+      {dep.code} - {dep.nom}
+    </option>
+  ))}
+</select>
+
             </div>
 
             {/* Ville */}
