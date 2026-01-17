@@ -1,13 +1,33 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import ArtisanCard from "../components/artisan/ArtisanCard";
-import { getAllArtisans } from "../services/artisan.service";
+
+const API_URL = import.meta.env.VITE_API_URL;
+
+// 🔹 Normalisation d’un artisan (évite undefined / null)
+const normalizeArtisan = (a) => ({
+  id: a.id,
+  nom: a.nom || "Indisponible",
+  specialite: a.specialite_obj?.nom || "Non précisée",
+  ville: a.ville_obj?.nom || "Indisponible",
+  departement: a.ville_obj?.departement
+    ? `${a.ville_obj.departement.code} - ${a.ville_obj.departement.nom}`
+    : "",
+  categorie: a.categorie?.nom || "",
+  note: Number(a.note) || 0,
+  image: a.image || "/images/placeholder.jpg",
+});
+
+// 🔹 Vérifie API
+const checkApiUrl = () => {
+  if (!API_URL) console.error("❌ VITE_API_URL non défini !");
+  return !!API_URL;
+};
 
 export default function Recherche() {
   const [params] = useSearchParams();
   const query = params.get("query") || "";
 
-  // 🔹 États
   const [artisans, setArtisans] = useState([]);
   const [filteredArtisans, setFilteredArtisans] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -21,94 +41,77 @@ export default function Recherche() {
 
   // 🔹 Normalisation texte
   const normalize = (str = "") =>
-    str
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase();
+    str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-  // 🔹 Chargement initial via SERVICE
+  // 🔹 Chargement initial des artisans
   useEffect(() => {
-    async function loadArtisans() {
+    const loadArtisans = async () => {
+      if (!checkApiUrl()) return;
+
       try {
-        const data = await getAllArtisans();
+        const res = await fetch(`${API_URL}/api/artisans`);
+        if (!res.ok) throw new Error(await res.text());
 
-        setArtisans(data);
-        setFilteredArtisans(data);
+        const data = await res.json();
+        const normalized = data.map(normalizeArtisan);
 
-        // 🔹 Filtres dynamiques
-        setCategories(
-          [...new Set(data.map(a => a.categorie).filter(Boolean))].sort()
-        );
+        setArtisans(normalized);
+        setFilteredArtisans(normalized);
 
-        // 🔹 Départements uniques (objets {id, code, nom})
-      const depMap = new Map();
-      data.forEach(a => {
-        const dep = a.departement;
-         if (dep) depMap.set(dep.id, dep);
-        });
-      setDepartements(Array.from(depMap.values()).sort((a,b) => a.nom.localeCompare(b.nom)));
+        // 🔹 Catégories uniques
+        setCategories([...new Set(normalized.map(a => a.categorie).filter(Boolean))].sort());
 
+        // 🔹 Départements uniques (id + code + nom)
+        const uniqueDeps = [
+          ...new Map(
+            normalized
+              .map(a => a.ville_obj?.departement)
+              .filter(Boolean)
+              .map(d => [d.id, d])
+          ).values(),
+        ];
+        setDepartements(uniqueDeps);
 
-      // Convertir Map en tableau et trier
-      setDepartements(Array.from(depMap.values()).sort((a, b) => a.nom.localeCompare(b.nom)));
-
-      } catch (error) {
-        console.error("Erreur chargement artisans :", error);
+      } catch (err) {
+        console.error("Erreur chargement artisans :", err.message);
       } finally {
         setLoading(false);
       }
-    }
+    };
 
     loadArtisans();
   }, []);
 
-  // 🔹 Synchronisation avec la recherche (header)
+  // 🔹 Synchronisation avec recherche header
   useEffect(() => {
-    let results = artisans;
+    if (!query.trim()) return setFilteredArtisans(artisans);
 
-    if (query.trim()) {
-      results = results.filter((a) =>
-        normalize(a.nom).includes(normalize(query))
-      );
-    }
-
+    const results = artisans.filter(a => normalize(a.nom).includes(normalize(query)));
     setFilteredArtisans(results);
   }, [query, artisans]);
 
-  // 🔹 Application des filtres
-  const handleSearch = () => {
-    let results = artisans;
+  // 🔹 Application des filtres combinés
+  const handleSearch = async () => {
+    if (!checkApiUrl()) return;
 
-    if (query.trim()) {
-      results = results.filter((a) =>
-        normalize(a.nom).includes(normalize(query))
-      );
+    try {
+      const queryParams = [];
+      if (categorie !== "Tous") queryParams.push(`categorie_id=${categorie}`);
+      if (departement !== "Tous") queryParams.push(`departement_id=${departement}`);
+      if (ville.trim()) queryParams.push(`ville_id=${ville}`);
+
+      const queryString = queryParams.length ? `?${queryParams.join("&")}` : "";
+      const res = await fetch(`${API_URL}/api/artisans/filter${queryString}`);
+      if (!res.ok) throw new Error(await res.text());
+
+      const data = await res.json();
+      setFilteredArtisans(data.map(normalizeArtisan));
+    } catch (err) {
+      console.error("Erreur handleSearch :", err.message);
     }
-
-    if (categorie !== "Tous") {
-      results = results.filter(
-        (a) => normalize(a.categorie) === normalize(categorie)
-      );
-    }
-
-   if (departement !== "Tous") {
-  results = results.filter(
-    (a) => a.departement && a.departement.id === Number(departement)
-  );
-}
-
-    if (ville.trim()) {
-      results = results.filter((a) =>
-        normalize(a.ville).includes(normalize(ville))
-      );
-    }
-
-    setFilteredArtisans(results);
   };
 
-  if (loading) {
-    return <p className="text-center py-5">Chargement...</p>;
-  }
+  if (loading) return <p className="text-center py-5">Chargement...</p>;
 
   return (
     <div className="container py-4">
@@ -128,35 +131,31 @@ export default function Recherche() {
               <select
                 className="form-select form-select-sm"
                 value={categorie}
-                onChange={(e) => setCategorie(e.target.value)}
+                onChange={e => setCategorie(e.target.value)}
               >
                 <option value="Tous">Toutes</option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
             </div>
 
             {/* Département */}
-<div className="mb-3">
-  <label className="form-label small">Département</label>
-  <select
-  className="form-select form-select-sm"
-  value={departement?.id || "Tous"}
-  onChange={(e) => setDepartement(e.target.value)}
->
-  <option value="Tous">Tous</option>
-  {departements.map((dep) => (
-    <option key={dep.id} value={dep.id}>
-      {dep.code} - {dep.nom}
-    </option>
-  ))}
-</select>
-
-
-</div>
+            <div className="mb-3">
+              <label className="form-label small">Département</label>
+              <select
+                className="form-select form-select-sm"
+                value={departement}
+                onChange={e => setDepartement(e.target.value)}
+              >
+                <option value="Tous">Tous</option>
+                {departements.map(dep => (
+                  <option key={dep.id} value={dep.id}>
+                    {dep.code} - {dep.nom}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             {/* Ville */}
             <div className="mb-3">
@@ -166,36 +165,32 @@ export default function Recherche() {
                 className="form-control form-control-sm"
                 placeholder="Ex : Lyon"
                 value={ville}
-                onChange={(e) => setVille(e.target.value)}
+                onChange={e => setVille(e.target.value)}
               />
             </div>
 
-            <button
-              className="btn btn-primary btn-sm w-100"
-              onClick={handleSearch}
-            >
+            <button className="btn btn-primary btn-sm w-100" onClick={handleSearch}>
               Rechercher
             </button>
           </div>
         </aside>
 
-        {/* 🔹 LISTE */}
+        {/* 🔹 LISTE ARTISANS */}
         <section className="col-md-9">
           <p className="small text-muted mb-3">
-            {filteredArtisans.length} artisan
-            {filteredArtisans.length > 1 ? "s" : ""}
+            {filteredArtisans.length} artisan{filteredArtisans.length > 1 ? "s" : ""}
           </p>
 
           <div className="row g-4">
-            {filteredArtisans.map((artisan) => (
+            {filteredArtisans.map(a => (
               <ArtisanCard
-                key={artisan.id}
-                id={artisan.id}
-                title={artisan.nom}
-                job={artisan.specialite}
-                city={artisan.ville}
-                note={artisan.note}
-                image={artisan.image}
+                key={a.id}
+                id={a.id}
+                title={a.nom}
+                job={a.specialite}
+                city={a.ville}
+                note={a.note}
+                image={a.image}
               />
             ))}
           </div>
