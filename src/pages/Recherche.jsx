@@ -13,8 +13,8 @@ export default function Recherche() {
   const [categories, setCategories] = useState([]);
   const [departements, setDepartements] = useState([]);
 
-  const [categorie, setCategorie] = useState("Tous");
-  const [departement, setDepartement] = useState("Tous");
+  const [categorie, setCategorie] = useState("Tous"); // id ou "Tous"
+  const [departement, setDepartement] = useState("Tous"); // id ou "Tous"
   const [ville, setVille] = useState("");
 
   const [loading, setLoading] = useState(true);
@@ -26,7 +26,7 @@ export default function Recherche() {
       .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase();
 
-  // 🔹 Chargement initial via SERVICE
+  // 🔹 Chargement initial
   useEffect(() => {
     async function loadArtisans() {
       try {
@@ -37,21 +37,19 @@ export default function Recherche() {
 
         // 🔹 Filtres dynamiques
         setCategories(
-          [...new Set(data.map(a => a.categorie).filter(Boolean))].sort()
+          [...new Set(data.map((a) => a.categorie).filter(Boolean))].sort()
         );
 
-        // 🔹 Départements uniques (objets {id, code, nom})
-      const depMap = new Map();
-      data.forEach(a => {
-        const dep = a.departement;
-         if (dep) depMap.set(dep.id, dep);
-        });
-      setDepartements(Array.from(depMap.values()).sort((a,b) => a.nom.localeCompare(b.nom)));
-
-
-      // Convertir Map en tableau et trier
-      setDepartements(Array.from(depMap.values()).sort((a, b) => a.nom.localeCompare(b.nom)));
-
+        // 🔹 Départements uniques avec id, code et nom
+        const uniqueDeps = [
+          ...new Map(
+            data
+              .map((a) => a.ville_obj?.departement)
+              .filter(Boolean)
+              .map((d) => [d.id, d])
+          ).values(),
+        ];
+        setDepartements(uniqueDeps);
       } catch (error) {
         console.error("Erreur chargement artisans :", error);
       } finally {
@@ -62,8 +60,14 @@ export default function Recherche() {
     loadArtisans();
   }, []);
 
-  // 🔹 Synchronisation avec la recherche (header)
+  // 🔹 Synchronisation avec la recherche dans le header
   useEffect(() => {
+    handleSearch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, artisans]);
+
+  // 🔹 Application des filtres combinés
+  const handleSearch = () => {
     let results = artisans;
 
     if (query.trim()) {
@@ -72,28 +76,26 @@ export default function Recherche() {
       );
     }
 
+    if (categorie !== "Tous") {
+      results = results.filter(
+        (a) => normalize(a.categorie) === normalize(categorie)
+      );
+    }
+
+    if (departement !== "Tous") {
+      results = results.filter(
+        (a) => String(a.ville_obj?.departement?.id) === departement
+      );
+    }
+
+    if (ville.trim()) {
+      results = results.filter((a) =>
+        normalize(a.ville).includes(normalize(ville))
+      );
+    }
+
     setFilteredArtisans(results);
-  }, [query, artisans]);
-
-  // 🔹 Application des filtres
- const handleSearch = async () => {
-  try {
-    let queryParams = [];
-
-    if (categorie !== "Tous") queryParams.push(`categorie_id=${categorie}`);
-    if (departement !== "Tous") queryParams.push(`departement_id=${departement}`);
-    if (ville.trim()) queryParams.push(`ville_id=${ville}`);
-
-    const queryString = queryParams.length ? `?${queryParams.join("&")}` : "";
-    const res = await fetch(`${API_URL}/api/artisans/filter${queryString}`);
-    if (!res.ok) throw new Error("Erreur lors du filtrage");
-
-    const data = await res.json();
-    setFilteredArtisans(data.map(a => normalizeArtisan(a)));
-  } catch (err) {
-    console.error("Erreur handleSearch :", err);
-  }
-};
+  };
 
   if (loading) {
     return <p className="text-center py-5">Chargement...</p>;
@@ -129,23 +131,21 @@ export default function Recherche() {
             </div>
 
             {/* Département */}
-<div className="mb-3">
-  <label className="form-label small">Département</label>
-  <select
-  className="form-select form-select-sm"
-  value={departement?.id || "Tous"}
-  onChange={(e) => setDepartement(e.target.value)}
->
-  <option value="Tous">Tous</option>
-  {departements.map((dep) => (
-    <option key={dep.id} value={dep.id}>
-      {dep.code} - {dep.nom}
-    </option>
-  ))}
-</select>
-
-
-</div>
+            <div className="mb-3">
+              <label className="form-label small">Département</label>
+              <select
+                className="form-select form-select-sm"
+                value={departement} // id ou "Tous"
+                onChange={(e) => setDepartement(e.target.value)}
+              >
+                <option value="Tous">Tous</option>
+                {departements.map((dep) => (
+                  <option key={dep.id} value={String(dep.id)}>
+                    {dep.code} - {dep.nom}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             {/* Ville */}
             <div className="mb-3">
@@ -168,7 +168,7 @@ export default function Recherche() {
           </div>
         </aside>
 
-        {/* 🔹 LISTE */}
+        {/* 🔹 LISTE DES ARTISANS */}
         <section className="col-md-9">
           <p className="small text-muted mb-3">
             {filteredArtisans.length} artisan
