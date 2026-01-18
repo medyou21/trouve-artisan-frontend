@@ -184,8 +184,8 @@ export default function Recherche() {
                 key={artisan.id}
                 id={artisan.id}
                 title={artisan.nom}
-                job={artisan.specialite_obj?.nom}
-                city={artisan.ville?.nom}
+                job={artisan.specialite}
+                city={artisan.ville}
                 note={artisan.note}
                 image={artisan.image}
               />
