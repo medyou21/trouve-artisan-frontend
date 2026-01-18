@@ -1,10 +1,10 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import ArtisanCard from "../components/artisan/ArtisanCard";
 
 export default function Artisan() {
   const { id } = useParams();
 
-  // ✅ États du composant
   const [artisan, setArtisan] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -34,22 +34,6 @@ export default function Artisan() {
     fetchArtisan();
   }, [id]);
 
-  // 🔹 Affichage des étoiles pour la note
-  const renderStars = (note) => {
-    const rounded = Math.round(note);
-    return (
-      <>
-        {[...Array(5)].map((_, i) => (
-          <span key={i} className={i < rounded ? "text-warning" : "text-muted"}>
-            ★
-          </span>
-        ))}
-        <span className="ms-2 small text-muted">{note}/5</span>
-      </>
-    );
-  };
-
-  // 🔹 Gestion de l'envoi du formulaire de contact
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!artisan) return;
@@ -80,59 +64,41 @@ export default function Artisan() {
     }
   };
 
-  // 🔹 Gestion des états de chargement / erreur
   if (loading) return <p className="text-center py-5">Chargement...</p>;
   if (error) return <p className="text-center py-5 text-danger">{error}</p>;
   if (!artisan) return <p className="text-center py-5">Artisan non trouvé</p>;
 
   return (
     <div className="container py-5">
-      {/* Carte artisan */}
+      {/* Carte artisan avec ArtisanCard */}
+      <div className="mb-4">
+        <ArtisanCard
+          id={artisan.id}
+          title={artisan.nom}
+          job={artisan.specialite}
+          city={artisan.ville?.nom}
+          image={artisan.image}
+          note={artisan.note}
+        />
+      </div>
+
+      {/* Informations complémentaires */}
       <div className="card shadow-sm mb-4">
-        <div className="row g-0">
-          <div className="col-md-4">
-            <img
-              src={artisan.image || "/images/default-artisan.png"}
-              alt={artisan.nom}
-              className="img-fluid rounded-start object-fit-cover"
-              style={{ width: "100%", height: "300px", objectFit: "cover" }}
-            />
-          </div>
-          <div className="col-md-8">
-            <div className="card-body">
-              <h2 className="fw-bold text-blue">{artisan.nom}</h2>
-              <div className="mb-2">{renderStars(artisan.note)}</div>
-
-              <p>
-                <strong>Spécialité :</strong> {artisan.specialite || "Indisponible"}{" "}
-                {artisan.categorie && `(${artisan.categorie})`}
-              </p>
-
-              <p>
-                <strong>Localisation :</strong> {artisan.ville || "Indisponible"}
-                {artisan.departement && ` (${artisan.departement})`}
-              </p>
-
-              <p>
-                <strong>Site web :</strong>{" "}
-                {artisan.site_web ? (
-                  <a href={artisan.site_web} target="_blank" rel="noopener noreferrer">
-                    {artisan.site_web}
-                  </a>
-                ) : (
-                  "Indisponible"
-                )}
-              </p>
-
-              <p>
-                <strong>Email :</strong> {artisan.email || "Indisponible"}
-              </p>
-
-              <p>
-                <strong>À propos :</strong> {artisan.a_propos || "Indisponible"}
-              </p>
-            </div>
-          </div>
+        <div className="card-body">
+          <p><strong>Catégorie :</strong> {artisan.categorie?.nom || "Indisponible"}</p>
+          <p><strong>Département :</strong> {artisan.departement?.nom || "Indisponible"}</p>
+          <p>
+            <strong>Site web :</strong>{" "}
+            {artisan.site_web ? (
+              <a href={artisan.site_web} target="_blank" rel="noopener noreferrer">
+                {artisan.site_web}
+              </a>
+            ) : (
+              "Indisponible"
+            )}
+          </p>
+          <p><strong>Email :</strong> {artisan.email || "Indisponible"}</p>
+          <p><strong>À propos :</strong> {artisan.a_propos || "Indisponible"}</p>
         </div>
       </div>
 
