@@ -44,7 +44,7 @@ export default function Recherche() {
 const uniqueDeps = Array.from(
   new Map(
     data
-      .map((a) => a.ville_obj?.departement)
+      .map((a) => a.ville?.departement)
       .filter(Boolean)
       .map((d) => [d.id, d])
   ).values()
