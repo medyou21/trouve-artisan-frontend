@@ -12,12 +12,10 @@ export default function Recherche() {
   const [filteredArtisans, setFilteredArtisans] = useState([]);
   const [categories, setCategories] = useState([]);
   const [departements, setDepartements] = useState([]);
-  const [villes, setVilles] = useState([]);
 
   const [categorie, setCategorie] = useState("Tous");
   const [departement, setDepartement] = useState("Tous");
   const [ville, setVille] = useState("");
-
   const [loading, setLoading] = useState(true);
 
   // 🔹 Normalisation texte
@@ -34,76 +32,56 @@ export default function Recherche() {
         setFilteredArtisans(data);
 
         // 🔹 Catégories uniques
-        setCategories(
-          [...new Set(data.map((a) => a.categorie?.nom).filter(Boolean))].sort()
-        );
+        const uniqueCats = [...new Set(data.map((a) => a.categorie).filter(Boolean))].sort();
+        setCategories(uniqueCats);
 
         // 🔹 Départements uniques
         const uniqueDeps = Array.from(
           new Map(
             data
-              .map((a) => a.ville?.departement)
+              .map((a) => a.departement) // ✅ utiliser champ normalisé
               .filter(Boolean)
               .map((d) => [d.id, d])
           ).values()
         );
         setDepartements(uniqueDeps);
-
-        // 🔹 Villes uniques (optionnel)
-        const uniqueVilles = Array.from(
-          new Map(
-            data
-              .map((a) => a.ville)
-              .filter(Boolean)
-              .map((v) => [v.id, v])
-          ).values()
-        );
-        setVilles(uniqueVilles);
       } catch (err) {
         console.error("Erreur chargement artisans :", err);
       } finally {
         setLoading(false);
       }
     }
+
     loadArtisans();
   }, []);
 
-  // 🔹 Rechercher automatiquement lorsque query ou filtres changent
+  // 🔹 Appliquer les filtres à chaque changement
   useEffect(() => {
     handleSearch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, artisans, categorie, departement, ville]);
 
-  // 🔹 Application des filtres combinés
   const handleSearch = () => {
     let results = artisans;
 
-    // Recherche par nom
+    // 🔹 Recherche par nom
     if (query.trim()) {
-      results = results.filter((a) =>
-        normalize(a.nom).includes(normalize(query))
-      );
+      results = results.filter((a) => normalize(a.nom).includes(normalize(query)));
     }
 
-    // Filtre catégorie
+    // 🔹 Filtre catégorie
     if (categorie !== "Tous") {
-      results = results.filter(
-        (a) => normalize(a.categorie?.nom) === normalize(categorie)
-      );
+      results = results.filter((a) => normalize(a.categorie) === normalize(categorie));
     }
 
-    // Filtre département
+    // 🔹 Filtre département
     if (departement !== "Tous") {
-      results = results.filter(
-        (a) => String(a.ville?.departement?.id) === departement
-      );
+      results = results.filter((a) => String(a.departement?.id) === departement);
     }
 
-    // Filtre ville
+    // 🔹 Filtre ville
     if (ville.trim()) {
-      results = results.filter((a) =>
-        normalize(a.ville?.nom).includes(normalize(ville))
-      );
+      results = results.filter((a) => normalize(a.ville).includes(normalize(ville)));
     }
 
     setFilteredArtisans(results);
@@ -133,7 +111,9 @@ export default function Recherche() {
               >
                 <option value="Tous">Toutes</option>
                 {categories.map((cat) => (
-                  <option key={cat} value={cat}>{cat}</option>
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
                 ))}
               </select>
             </div>
@@ -167,20 +147,16 @@ export default function Recherche() {
               />
             </div>
 
-            <button
-              className="btn btn-primary btn-sm w-100"
-              onClick={handleSearch}
-            >
+            <button className="btn btn-primary btn-sm w-100" onClick={handleSearch}>
               Rechercher
             </button>
           </div>
         </aside>
 
-        {/* 🔹 LISTE DES ARTISANS */}
+        {/* LISTE ARTISANS */}
         <section className="col-md-9">
           <p className="small text-muted mb-3">
-            {filteredArtisans.length} artisan
-            {filteredArtisans.length > 1 ? "s" : ""}
+            {filteredArtisans.length} artisan{filteredArtisans.length > 1 ? "s" : ""}
           </p>
 
           <div className="row g-4">
