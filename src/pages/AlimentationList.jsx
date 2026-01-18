@@ -12,7 +12,7 @@ export default function Services() {
   const [departement, setDepartement] = useState("Tous");
   const [ville, setVille] = useState("");
 
-  // 🔹 Normalisation
+  // 🔹 Normalisation texte
   const normalize = (str = "") =>
     str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
@@ -20,33 +20,21 @@ export default function Services() {
   useEffect(() => {
     async function loadArtisans() {
       try {
-        // ⚠️ ID réel de la catégorie Alimentation
+        // ⚠️ ID de la catégorie Alimentation
         const data = await getArtisansByCategorie(2);
 
-        // 🔹 Normalisation
-        const normalized = data.map((a) => ({
-          id: a.id,
-          nom: a.nom || "Indisponible",
-          specialite: a.specialite || "Non précisée",
-          ville: a.ville || "Indisponible",
-          departement: a.departement || null,
-          note: a.note || 0,
-          image: a.image || "/images/placeholder.jpg",
-        }));
+        setArtisans(data);
+        setFilteredArtisans(data);
 
-        setArtisans(normalized);
-        setFilteredArtisans(normalized);
-
-        // 🔹 Départements uniques
+        // 🔹 Départements uniques à partir du champ normalisé
         const uniqueDeps = Array.from(
           new Map(
-            normalized
+            data
               .map((a) => a.departement)
               .filter(Boolean)
               .map((d) => [d.id, d])
           ).values()
         );
-
         setDepartements(uniqueDeps);
       } catch (err) {
         console.error("Erreur chargement artisans :", err);
@@ -58,7 +46,7 @@ export default function Services() {
     loadArtisans();
   }, []);
 
-  // 🔹 Appliquer les filtres à chaque changement
+  // 🔹 Application des filtres
   useEffect(() => {
     handleSearch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -67,14 +55,12 @@ export default function Services() {
   const handleSearch = () => {
     let results = [...artisans];
 
-    // 🔹 Filtre département
+    // Filtre département
     if (departement !== "Tous") {
-      results = results.filter(
-        (a) => String(a.departement?.id) === String(departement)
-      );
+      results = results.filter((a) => String(a.departement?.id) === String(departement));
     }
 
-    // 🔹 Filtre ville
+    // Filtre ville
     if (ville.trim()) {
       results = results.filter((a) => normalize(a.ville).includes(normalize(ville)));
     }
@@ -101,8 +87,14 @@ export default function Services() {
       <div className="row">
         {/* FILTRES */}
         <aside className="col-md-3 mb-4">
-          <div className="border rounded p-3 bg-light">
-            <h6 className="fw-bold mb-3">Filtrer les résultats</h6>
+          <form
+            className="border rounded p-3 bg-light"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSearch();
+            }}
+          >
+            <h2 className="h6 fw-bold mb-3">Filtrer les résultats</h2>
 
             {/* Département */}
             <div className="mb-3">
@@ -133,21 +125,16 @@ export default function Services() {
               />
             </div>
 
-            <button
-              className="btn btn-primary btn-sm w-100"
-              onClick={handleSearch}
-            >
+            <button type="submit" className="btn btn-primary btn-sm w-100">
               Rechercher
             </button>
-          </div>
+          </form>
         </aside>
 
         {/* LISTE ARTISANS */}
         <section className="col-md-9">
           <p className="small text-muted mb-3">
-            {filteredArtisans.length} artisan
-            {filteredArtisans.length > 1 ? "s" : ""} trouvé
-            {filteredArtisans.length > 1 ? "s" : ""}
+            {filteredArtisans.length} artisan{filteredArtisans.length > 1 ? "s" : ""}
           </p>
 
           {filteredArtisans.length === 0 && (
