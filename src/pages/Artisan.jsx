@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import ArtisanCard from "../components/artisan/ArtisanCard";
+import { getArtisanById } from "../services/artisan.service";
 
 export default function Artisan() {
   const { id } = useParams();
@@ -11,17 +11,12 @@ export default function Artisan() {
   const [sending, setSending] = useState(false);
   const [contactMessage, setContactMessage] = useState("");
 
-  // 🔹 Fetch artisan depuis le backend
+  // 🔹 Fetch artisan via le service
   useEffect(() => {
     async function fetchArtisan() {
       try {
-        const API_URL = import.meta.env.VITE_API_URL;
-        if (!API_URL) throw new Error("VITE_API_URL non défini");
-
-        const res = await fetch(`${API_URL}/api/artisans/${id}`);
-        if (!res.ok) throw new Error(`Artisan non trouvé (HTTP ${res.status})`);
-
-        const data = await res.json();
+        const data = await getArtisanById(id);
+        if (!data) throw new Error("Artisan non trouvé");
         setArtisan(data);
       } catch (err) {
         console.error(err);
@@ -34,6 +29,22 @@ export default function Artisan() {
     fetchArtisan();
   }, [id]);
 
+  // 🔹 Affichage étoiles
+  const renderStars = (note) => {
+    const rounded = Math.round(note || 0);
+    return (
+      <>
+        {[...Array(5)].map((_, i) => (
+          <span key={i} className={i < rounded ? "text-warning" : "text-muted"}>
+            ★
+          </span>
+        ))}
+        <span className="ms-2 small text-muted">{note?.toFixed(1) || "0"}/5</span>
+      </>
+    );
+  };
+
+  // 🔹 Envoi du formulaire de contact
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!artisan) return;
@@ -70,35 +81,34 @@ export default function Artisan() {
 
   return (
     <div className="container py-5">
-      {/* Carte artisan avec ArtisanCard */}
-      <div className="mb-4">
-        <ArtisanCard
-          id={artisan.id}
-          title={artisan.nom}
-          job={artisan.specialite}
-          city={artisan.ville?.nom}
-          image={artisan.image}
-          note={artisan.note}
-        />
-      </div>
-
-      {/* Informations complémentaires */}
+      {/* Carte artisan */}
       <div className="card shadow-sm mb-4">
-        <div className="card-body">
-          <p><strong>Catégorie :</strong> {artisan.categorie?.nom || "Indisponible"}</p>
-          <p><strong>Département :</strong> {artisan.departement?.nom || "Indisponible"}</p>
-          <p>
-            <strong>Site web :</strong>{" "}
-            {artisan.site_web ? (
-              <a href={artisan.site_web} target="_blank" rel="noopener noreferrer">
-                {artisan.site_web}
-              </a>
-            ) : (
-              "Indisponible"
-            )}
-          </p>
-          <p><strong>Email :</strong> {artisan.email || "Indisponible"}</p>
-          <p><strong>À propos :</strong> {artisan.a_propos || "Indisponible"}</p>
+        <div className="row g-0">
+          <div className="col-md-4">
+            <img
+              src={artisan.image}
+              alt={artisan.nom}
+              className="img-fluid rounded-start"
+              style={{ width: "100%", height: "300px", objectFit: "cover" }}
+            />
+          </div>
+          <div className="col-md-8">
+            <div className="card-body">
+              <h2 className="fw-bold text-blue">{artisan.nom}</h2>
+              <div className="mb-2">{renderStars(artisan.note)}</div>
+
+              <p><strong>Spécialité :</strong> {artisan.specialite} {artisan.categorie && `(${artisan.categorie})`}</p>
+              <p><strong>Localisation :</strong> {artisan.ville} {artisan.departement?.nom && `(${artisan.departement.nom})`}</p>
+              <p>
+                <strong>Site web :</strong>{" "}
+                {artisan.site_web ? (
+                  <a href={artisan.site_web} target="_blank" rel="noopener noreferrer">{artisan.site_web}</a>
+                ) : "Indisponible"}
+              </p>
+              <p><strong>Email :</strong> {artisan.email || "Indisponible"}</p>
+              <p><strong>À propos :</strong> {artisan.a_propos || "Indisponible"}</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -126,12 +136,7 @@ export default function Artisan() {
 
               <div className="mb-3">
                 <label className="form-label">Message</label>
-                <textarea
-                  name="message"
-                  className="form-control"
-                  rows="4"
-                  required
-                ></textarea>
+                <textarea name="message" className="form-control" rows="4" required></textarea>
               </div>
 
               <button type="submit" className="btn btn-primary" disabled={sending}>
@@ -145,9 +150,7 @@ export default function Artisan() {
               )}
             </form>
           ) : (
-            <p className="small text-muted">
-              Aucun email disponible pour ce prestataire.
-            </p>
+            <p className="small text-muted">Aucun email disponible pour ce prestataire.</p>
           )}
         </div>
       </div>
