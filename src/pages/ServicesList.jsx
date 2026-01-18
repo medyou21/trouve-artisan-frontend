@@ -1,45 +1,66 @@
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ArtisanCard from "../components/artisan/ArtisanCard";
 import { getArtisansByCategorie } from "../services/artisan.service";
 
+/**
+ * Page Services
+ * Artisans de la catégorie Services
+ */
 export default function Services() {
-  // ✅ États pour gérer les données et filtres
   const [artisans, setArtisans] = useState([]);
   const [filteredArtisans, setFilteredArtisans] = useState([]);
   const [departements, setDepartements] = useState([]);
   const [loading, setLoading] = useState(true);
+
   const [departement, setDepartement] = useState("Tous");
   const [ville, setVille] = useState("");
 
-  // 🔹 Chargement des artisans au montage du composant
+  /**
+   * Normalisation texte
+   */
+  const normalize = (str = "") =>
+    str
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+
+  /**
+   * Chargement artisans
+   */
   useEffect(() => {
     async function loadArtisans() {
       try {
-        const data = await getArtisansByCategorie("Services");
+        // ⚠️ ID réel de la catégorie Services (à adapter si besoin)
+        const data = await getArtisansByCategorie(4);
 
-        // ✅ Normalisation des données
-        const normalizedData = data.map((a) => ({
+        const normalized = data.map((a) => ({
           id: a.id,
           nom: a.nom,
           specialite: a.specialite,
           ville: a.ville || "",
-          departement: a.departement || "",
-          note: Number(a.note) || 0,
+          departement: a.ville_obj?.departement || null,
+          departement_id: a.ville_obj?.departement?.id || null,
+          note: a.note,
           image: a.image || "/images/placeholder.jpg",
         }));
 
-        setArtisans(normalizedData);
-        setFilteredArtisans(normalizedData);
+        setArtisans(normalized);
+        setFilteredArtisans(normalized);
 
-        // 🔹 Extraire les départements uniques pour le filtre
-        const uniqueDepartements = [
-          ...new Set(normalizedData.map((a) => a.departement).filter(Boolean)),
-        ].sort();
+        // 🔹 départements uniques (id / code / nom)
+        const uniqueDepartements = Array.from(
+          new Map(
+            normalized
+              .map((a) => a.departement)
+              .filter(Boolean)
+              .map((d) => [d.id, d])
+          ).values()
+        );
 
         setDepartements(uniqueDepartements);
       } catch (error) {
-        console.error("Erreur chargement services :", error);
+        console.error("Erreur chargement Services :", error);
       } finally {
         setLoading(false);
       }
@@ -48,64 +69,70 @@ export default function Services() {
     loadArtisans();
   }, []);
 
-  // 🔹 Fonction utilitaire pour normaliser texte (accent, majuscule)
-  const normalize = (str = "") =>
-    str
-      .normalize("NFD") // sépare lettres et accents
-      .replace(/[\u0300-\u036f]/g, "") // supprime les accents
-      .toLowerCase();
-
-  // 🔹 Filtrage des artisans selon département et ville
+  /**
+   * Application des filtres
+   */
   const handleSearch = () => {
-    let results = artisans;
+    let results = [...artisans];
 
     if (departement !== "Tous") {
       results = results.filter(
-        (a) => normalize(a.departement) === normalize(departement)
+        (a) => String(a.departement_id) === String(departement)
       );
     }
 
-    if (ville.trim() !== "") {
+    if (ville.trim()) {
       results = results.filter((a) =>
         normalize(a.ville).includes(normalize(ville))
       );
     }
 
     setFilteredArtisans(results);
-
-    // 🔹 Réinitialisation des filtres après recherche
-    setDepartement("Tous");
-    setVille("");
   };
 
-  // 🔹 Affichage pendant le chargement
   if (loading) {
-    return <p className="text-center py-5">Chargement...</p>;
+    return (
+      <p className="text-center py-5" aria-live="polite">
+        Chargement des artisans...
+      </p>
+    );
   }
 
   return (
-    <div className="container py-4">
-      {/* Breadcrumb */}
-      <p className="small text-muted">
-        <NavLink
-                to="/"
-                className="nav-link"
-                             >
-                Accueil
-              </NavLink> / <strong>Services</strong>
-      </p>
+    <main className="container py-4">
+      {/* Fil d’Ariane */}
+      <nav aria-label="Fil d’Ariane">
+        <p className="small text-muted">
+          <NavLink to="/" className="nav-link d-inline p-0">
+            Accueil
+          </NavLink>{" "}
+          / <strong>Services</strong>
+        </p>
+      </nav>
 
-      <h2 className="fw-bold mb-4">Trouver un prestataire de services</h2>
+      <h1 className="fw-bold mb-4">
+        Trouver un prestataire de services
+      </h1>
 
       <div className="row">
         {/* FILTRES */}
         <aside className="col-md-3 mb-4">
-          <div className="border rounded p-3 bg-light">
-            <h6 className="fw-bold mb-3">Filtrer les résultats</h6>
+          <form
+            className="border rounded p-3 bg-light"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSearch();
+            }}
+          >
+            <h2 className="h6 fw-bold mb-3">
+              Filtrer les résultats
+            </h2>
 
-            {/* Filtre Département */}
+            {/* Département */}
             <div className="mb-3">
-              <label className="form-label small">Département</label>
+              <label className="form-label small">
+                Département
+              </label>
               <select
                 className="form-select form-select-sm"
                 value={departement}
@@ -113,16 +140,18 @@ export default function Services() {
               >
                 <option value="Tous">Tous</option>
                 {departements.map((dep) => (
-                  <option key={dep} value={dep}>
-                    {dep}
+                  <option key={dep.id} value={dep.id}>
+                    {dep.code} - {dep.nom}
                   </option>
                 ))}
               </select>
             </div>
 
-            {/* Filtre Ville */}
+            {/* Ville */}
             <div className="mb-3">
-              <label className="form-label small">Ville</label>
+              <label className="form-label small">
+                Ville
+              </label>
               <input
                 type="text"
                 className="form-control form-control-sm"
@@ -133,40 +162,43 @@ export default function Services() {
             </div>
 
             <button
+              type="submit"
               className="btn btn-primary btn-sm w-100"
-              onClick={handleSearch}
             >
               Rechercher
             </button>
-          </div>
+          </form>
         </aside>
 
-        {/* LISTE DES ARTISANS */}
+        {/* LISTE */}
         <section className="col-md-9">
-          <div className="card shadow-sm mb-4">
-            <div className="card-body">
-              <p className="small text-muted mb-3">
-                {filteredArtisans.length} artisan
-                {filteredArtisans.length > 1 ? "s" : ""}
-              </p>
+          <p className="small text-muted mb-3">
+            {filteredArtisans.length} artisan
+            {filteredArtisans.length > 1 ? "s" : ""} trouvé
+            {filteredArtisans.length > 1 ? "s" : ""}
+          </p>
 
-              <div className="row g-4">
-                {filteredArtisans.map((artisan) => (
-                  <ArtisanCard
-                    key={artisan.id}
-                    id={artisan.id}
-                    title={artisan.nom}
-                    job={artisan.specialite}
-                    city={artisan.ville}
-                    note={artisan.note}
-                    image={artisan.image}
-                  />
-                ))}
-              </div>
-            </div>
+          {filteredArtisans.length === 0 && (
+            <p className="text-center text-muted py-4">
+              Aucun prestataire ne correspond à votre recherche.
+            </p>
+          )}
+
+          <div className="row g-4">
+            {filteredArtisans.map((artisan) => (
+              <ArtisanCard
+                key={artisan.id}
+                id={artisan.id}
+                title={artisan.nom}
+                job={artisan.specialite}
+                city={artisan.ville}
+                note={artisan.note}
+                image={artisan.image}
+              />
+            ))}
           </div>
         </section>
       </div>
-    </div>
+    </main>
   );
 }
