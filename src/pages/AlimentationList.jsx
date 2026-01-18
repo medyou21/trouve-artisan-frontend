@@ -1,12 +1,10 @@
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ArtisanCard from "../components/artisan/ArtisanCard";
 import { getArtisansByCategorie } from "../services/artisan.service";
 
 /**
- * Page Services
- * Affiche la liste des artisans de la catégorie "Alimentation"
- * avec filtres par département et ville.
+ * Page Services – Alimentation
  */
 export default function Services() {
   const [artisans, setArtisans] = useState([]);
@@ -19,8 +17,6 @@ export default function Services() {
 
   /**
    * Normalisation des chaînes
-   * → suppression des accents
-   * → comparaison insensible à la casse
    */
   const normalize = (str = "") =>
     str
@@ -29,39 +25,41 @@ export default function Services() {
       .toLowerCase();
 
   /**
-   * Chargement des artisans depuis l'API
+   * Chargement des artisans
    */
   useEffect(() => {
     async function loadArtisans() {
       try {
-        const data = await getArtisansByCategorie("Alimentation");
+        // ⚠️ utiliser l'ID réel de la catégorie Alimentation
+        const data = await getArtisansByCategorie(1);
 
-        // Normalisation des données (MariaDB → Frontend)
-        const normalizedData = data.map((artisan) => ({
-          id: artisan.id,
-          nom: artisan.nom,
-          specialite: artisan.specialite,
-          ville: artisan.ville || "",
-          departement: artisan.departement || "",
-          note: Number(artisan.note) || 0,
-          image: artisan.image || "/images/placeholder.jpg",
+        const normalized = data.map((a) => ({
+          id: a.id,
+          nom: a.nom,
+          specialite: a.specialite,
+          ville: a.ville,
+          departement: a.ville_obj?.departement || null,
+          departement_id: a.ville_obj?.departement?.id || null,
+          note: a.note,
+          image: a.image,
         }));
 
-        setArtisans(normalizedData);
-        setFilteredArtisans(normalizedData);
+        setArtisans(normalized);
+        setFilteredArtisans(normalized);
 
-        // Départements uniques
-        const uniqueDepartements = [
-          ...new Set(
-            normalizedData
+        // 🔹 départements uniques (id / code / nom)
+        const uniqueDeps = Array.from(
+          new Map(
+            normalized
               .map((a) => a.departement)
               .filter(Boolean)
-          ),
-        ];
+              .map((d) => [d.id, d])
+          ).values()
+        );
 
-        setDepartements(uniqueDepartements);
-      } catch (error) {
-        console.error("Erreur chargement artisans :", error);
+        setDepartements(uniqueDeps);
+      } catch (err) {
+        console.error("Erreur chargement artisans :", err);
       } finally {
         setLoading(false);
       }
@@ -78,11 +76,11 @@ export default function Services() {
 
     if (departement !== "Tous") {
       results = results.filter(
-        (a) => normalize(a.departement) === normalize(departement)
+        (a) => String(a.departement_id) === String(departement)
       );
     }
 
-    if (ville.trim() !== "") {
+    if (ville.trim()) {
       results = results.filter((a) =>
         normalize(a.ville).includes(normalize(ville))
       );
@@ -91,15 +89,8 @@ export default function Services() {
     setFilteredArtisans(results);
   };
 
-  /**
-   * État de chargement
-   */
   if (loading) {
-    return (
-      <p className="text-center py-5" aria-live="polite">
-        Chargement des artisans...
-      </p>
-    );
+    return <p className="text-center py-5">Chargement des artisans…</p>;
   }
 
   return (
@@ -107,12 +98,10 @@ export default function Services() {
       {/* Fil d'Ariane */}
       <nav aria-label="Fil d’Ariane">
         <p className="small text-muted">
-         <Link
-                to="/"
-                className="nav-link"
-                             >
-                Accueil
-              </Link> / <strong>Alimentation</strong>
+          <Link to="/" className="nav-link d-inline p-0">
+            Accueil
+          </Link>{" "}
+          / <strong>Alimentation</strong>
         </p>
       </nav>
 
@@ -130,28 +119,20 @@ export default function Services() {
               handleSearch();
             }}
           >
-            <h2 className="h6 fw-bold mb-3">
-              Filtrer les résultats
-            </h2>
+            <h2 className="h6 fw-bold mb-3">Filtrer les résultats</h2>
 
             {/* Département */}
             <div className="mb-3">
-              <label
-                htmlFor="departement"
-                className="form-label small"
-              >
-                Département
-              </label>
+              <label className="form-label small">Département</label>
               <select
-                id="departement"
                 className="form-select form-select-sm"
                 value={departement}
                 onChange={(e) => setDepartement(e.target.value)}
               >
                 <option value="Tous">Tous</option>
                 {departements.map((dep) => (
-                  <option key={dep} value={dep}>
-                    {dep}
+                  <option key={dep.id} value={dep.id}>
+                    {dep.code} - {dep.nom}
                   </option>
                 ))}
               </select>
@@ -159,14 +140,8 @@ export default function Services() {
 
             {/* Ville */}
             <div className="mb-3">
-              <label
-                htmlFor="ville"
-                className="form-label small"
-              >
-                Ville
-              </label>
+              <label className="form-label small">Ville</label>
               <input
-                id="ville"
                 type="text"
                 className="form-control form-control-sm"
                 placeholder="Ex : Lyon"
@@ -175,45 +150,38 @@ export default function Services() {
               />
             </div>
 
-            <button
-              type="submit"
-              className="btn btn-primary btn-sm w-100"
-            >
+            <button type="submit" className="btn btn-primary btn-sm w-100">
               Rechercher
             </button>
           </form>
         </aside>
 
-        {/* LISTE DES ARTISANS */}
+        {/* LISTE */}
         <section className="col-md-9">
-          <div className="card shadow-sm mb-4">
-            <div className="card-body">
-              <p className="small text-muted mb-3">
-                {filteredArtisans.length} artisan
-                {filteredArtisans.length > 1 ? "s" : ""} trouvé
-                {filteredArtisans.length > 1 ? "s" : ""}
-              </p>
+          <p className="small text-muted mb-3">
+            {filteredArtisans.length} artisan
+            {filteredArtisans.length > 1 ? "s" : ""} trouvé
+            {filteredArtisans.length > 1 ? "s" : ""}
+          </p>
 
-              {filteredArtisans.length === 0 && (
-                <p className="text-center text-muted py-4">
-                  Aucun artisan ne correspond à votre recherche.
-                </p>
-              )}
+          {filteredArtisans.length === 0 && (
+            <p className="text-center text-muted py-4">
+              Aucun artisan ne correspond à votre recherche.
+            </p>
+          )}
 
-              <div className="row g-4">
-                {filteredArtisans.map((artisan) => (
-                  <ArtisanCard
-                    key={artisan.id}
-                    id={artisan.id}
-                    title={artisan.nom}
-                    job={artisan.specialite}
-                    city={artisan.ville}
-                    note={artisan.note}
-                    image={artisan.image}
-                  />
-                ))}
-              </div>
-            </div>
+          <div className="row g-4">
+            {filteredArtisans.map((a) => (
+              <ArtisanCard
+                key={a.id}
+                id={a.id}
+                title={a.nom}
+                job={a.specialite}
+                city={a.ville}
+                note={a.note}
+                image={a.image}
+              />
+            ))}
           </div>
         </section>
       </div>
