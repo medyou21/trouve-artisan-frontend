@@ -31,7 +31,7 @@ export default function Services() {
     async function loadArtisans() {
       try {
         // ⚠️ utiliser l'ID réel de la catégorie Alimentation
-        const data = await getArtisansByCategorie(1);
+        const data = await getArtisansByCategorie(2);
 
         const normalized = data.map((a) => ({
           id: a.id,
