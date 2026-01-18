@@ -37,20 +37,18 @@ export default function Recherche() {
 
         // 🔹 Filtres dynamiques
         setCategories(
-          [...new Set(data.map((a) => a.categorie).filter(Boolean))].sort()
+          [...new Set(data.map((a) => a.categorie?.nom).filter(Boolean))].sort()
         );
 
-        // 🔹 Départements uniques avec id, code et nom
-const uniqueDeps = Array.from(
-  new Map(
-    data
-      .map((a) => a.ville?.departement)
-      .filter(Boolean)
-      .map((d) => [d.id, d])
-  ).values()
-);
-setDepartements(uniqueDeps);
-
+        const uniqueDeps = Array.from(
+          new Map(
+            data
+              .map((a) => a.ville?.departement)
+              .filter(Boolean)
+              .map((d) => [d.id, d])
+          ).values()
+        );
+        setDepartements(uniqueDeps);
       } catch (error) {
         console.error("Erreur chargement artisans :", error);
       } finally {
@@ -65,33 +63,37 @@ setDepartements(uniqueDeps);
   useEffect(() => {
     handleSearch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, artisans]);
+  }, [query, artisans, categorie, departement, ville]);
 
   // 🔹 Application des filtres combinés
   const handleSearch = () => {
     let results = artisans;
 
+    // 🔹 Recherche par nom
     if (query.trim()) {
       results = results.filter((a) =>
         normalize(a.nom).includes(normalize(query))
       );
     }
 
+    // 🔹 Filtre catégorie
     if (categorie !== "Tous") {
       results = results.filter(
-        (a) => normalize(a.categorie) === normalize(categorie)
+        (a) => normalize(a.categorie?.nom) === normalize(categorie)
       );
     }
 
+    // 🔹 Filtre département
     if (departement !== "Tous") {
       results = results.filter(
-        (a) => String(a.ville_obj?.departement?.id) === departement
+        (a) => String(a.ville?.departement?.id) === departement
       );
     }
 
+    // 🔹 Filtre ville
     if (ville.trim()) {
       results = results.filter((a) =>
-        normalize(a.ville).includes(normalize(ville))
+        normalize(a.ville?.nom).includes(normalize(ville))
       );
     }
 
@@ -135,18 +137,17 @@ setDepartements(uniqueDeps);
             <div className="mb-3">
               <label className="form-label small">Département</label>
               <select
-  className="form-select form-select-sm"
-  value={departement}
-  onChange={(e) => setDepartement(e.target.value)}
->
-  <option value="Tous">Tous</option>
-  {departements.map((dep) => (
-    <option key={dep.id} value={String(dep.id)}>
-      {dep.code} - {dep.nom}
-    </option>
-  ))}
-</select>
-
+                className="form-select form-select-sm"
+                value={departement}
+                onChange={(e) => setDepartement(e.target.value)}
+              >
+                <option value="Tous">Tous</option>
+                {departements.map((dep) => (
+                  <option key={dep.id} value={String(dep.id)}>
+                    {dep.code} - {dep.nom}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Ville */}
@@ -183,8 +184,8 @@ setDepartements(uniqueDeps);
                 key={artisan.id}
                 id={artisan.id}
                 title={artisan.nom}
-                job={artisan.specialite}
-                city={artisan.ville}
+                job={artisan.specialite_obj?.nom}
+                city={artisan.ville?.nom}
                 note={artisan.note}
                 image={artisan.image}
               />
