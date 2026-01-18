@@ -12,19 +12,17 @@ export default function Recherche() {
   const [filteredArtisans, setFilteredArtisans] = useState([]);
   const [categories, setCategories] = useState([]);
   const [departements, setDepartements] = useState([]);
+  const [villes, setVilles] = useState([]);
 
-  const [categorie, setCategorie] = useState("Tous"); // id ou "Tous"
-  const [departement, setDepartement] = useState("Tous"); // id ou "Tous"
+  const [categorie, setCategorie] = useState("Tous");
+  const [departement, setDepartement] = useState("Tous");
   const [ville, setVille] = useState("");
 
   const [loading, setLoading] = useState(true);
 
   // 🔹 Normalisation texte
   const normalize = (str = "") =>
-    str
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase();
+    str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
   // 🔹 Chargement initial
   useEffect(() => {
@@ -35,72 +33,83 @@ export default function Recherche() {
         setArtisans(data);
         setFilteredArtisans(data);
 
-        // 🔹 Filtres dynamiques
+        // 🔹 Catégories uniques
         setCategories(
-          [...new Set(data.map((a) => a.categorie).filter(Boolean))].sort()
+          [...new Set(data.map((a) => a.categorie?.nom).filter(Boolean))].sort()
         );
 
-        // 🔹 Départements uniques avec id, code et nom
-const uniqueDeps = Array.from(
-  new Map(
-    data
-      .map((a) => a.ville?.departement)
-      .filter(Boolean)
-      .map((d) => [d.id, d])
-  ).values()
-);
-setDepartements(uniqueDeps);
+        // 🔹 Départements uniques
+        const uniqueDeps = Array.from(
+          new Map(
+            data
+              .map((a) => a.ville?.departement)
+              .filter(Boolean)
+              .map((d) => [d.id, d])
+          ).values()
+        );
+        setDepartements(uniqueDeps);
 
-      } catch (error) {
-        console.error("Erreur chargement artisans :", error);
+        // 🔹 Villes uniques (optionnel)
+        const uniqueVilles = Array.from(
+          new Map(
+            data
+              .map((a) => a.ville)
+              .filter(Boolean)
+              .map((v) => [v.id, v])
+          ).values()
+        );
+        setVilles(uniqueVilles);
+      } catch (err) {
+        console.error("Erreur chargement artisans :", err);
       } finally {
         setLoading(false);
       }
     }
-
     loadArtisans();
   }, []);
 
-  // 🔹 Synchronisation avec la recherche dans le header
+  // 🔹 Rechercher automatiquement lorsque query ou filtres changent
   useEffect(() => {
     handleSearch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, artisans]);
+  }, [query, artisans, categorie, departement, ville]);
 
   // 🔹 Application des filtres combinés
   const handleSearch = () => {
     let results = artisans;
 
+    // Recherche par nom
     if (query.trim()) {
       results = results.filter((a) =>
         normalize(a.nom).includes(normalize(query))
       );
     }
 
+    // Filtre catégorie
     if (categorie !== "Tous") {
       results = results.filter(
-        (a) => normalize(a.categorie) === normalize(categorie)
+        (a) => normalize(a.categorie?.nom) === normalize(categorie)
       );
     }
 
+    // Filtre département
     if (departement !== "Tous") {
       results = results.filter(
-        (a) => String(a.ville_obj?.departement?.id) === departement
+        (a) => String(a.ville?.departement?.id) === departement
       );
     }
 
+    // Filtre ville
     if (ville.trim()) {
       results = results.filter((a) =>
-        normalize(a.ville).includes(normalize(ville))
+        normalize(a.ville?.nom).includes(normalize(ville))
       );
     }
 
     setFilteredArtisans(results);
   };
 
-  if (loading) {
-    return <p className="text-center py-5">Chargement...</p>;
-  }
+  if (loading) return <p className="text-center py-5">Chargement...</p>;
 
   return (
     <div className="container py-4">
@@ -109,7 +118,7 @@ setDepartements(uniqueDeps);
       </h2>
 
       <div className="row">
-        {/* 🔹 FILTRES */}
+        {/* FILTRES */}
         <aside className="col-md-3 mb-4">
           <div className="border rounded p-3 bg-light">
             <h6 className="fw-bold mb-3">Filtres</h6>
@@ -124,9 +133,7 @@ setDepartements(uniqueDeps);
               >
                 <option value="Tous">Toutes</option>
                 {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
+                  <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
             </div>
@@ -135,18 +142,17 @@ setDepartements(uniqueDeps);
             <div className="mb-3">
               <label className="form-label small">Département</label>
               <select
-  className="form-select form-select-sm"
-  value={departement}
-  onChange={(e) => setDepartement(e.target.value)}
->
-  <option value="Tous">Tous</option>
-  {departements.map((dep) => (
-    <option key={dep.id} value={String(dep.id)}>
-      {dep.code} - {dep.nom}
-    </option>
-  ))}
-</select>
-
+                className="form-select form-select-sm"
+                value={departement}
+                onChange={(e) => setDepartement(e.target.value)}
+              >
+                <option value="Tous">Tous</option>
+                {departements.map((dep) => (
+                  <option key={dep.id} value={String(dep.id)}>
+                    {dep.code} - {dep.nom}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Ville */}
