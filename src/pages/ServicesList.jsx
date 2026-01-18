@@ -3,10 +3,6 @@ import { useEffect, useState } from "react";
 import ArtisanCard from "../components/artisan/ArtisanCard";
 import { getArtisansByCategorie } from "../services/artisan.service";
 
-/**
- * Page Services
- * Artisans de la catégorie Services
- */
 export default function Services() {
   const [artisans, setArtisans] = useState([]);
   const [filteredArtisans, setFilteredArtisans] = useState([]);
@@ -16,49 +12,30 @@ export default function Services() {
   const [departement, setDepartement] = useState("Tous");
   const [ville, setVille] = useState("");
 
-  /**
-   * Normalisation texte
-   */
+  // Normalisation texte
   const normalize = (str = "") =>
-    str
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase();
+    str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-  /**
-   * Chargement artisans
-   */
+  // Chargement des artisans
   useEffect(() => {
     async function loadArtisans() {
       try {
-        // ⚠️ ID réel de la catégorie Services (à adapter si besoin)
-        const data = await getArtisansByCategorie(4);
+        const data = await getArtisansByCategorie(4); // ID Services
 
-        const normalized = data.map((a) => ({
-          id: a.id,
-          nom: a.nom,
-          specialite: a.specialite,
-          ville: a.ville || "",
-          departement: a.ville?.departement || null,
-          departement_id: a.ville?.departement?.id || null,
-          note: a.note,
-          image: a.image || "/images/placeholder.jpg",
-        }));
+        setArtisans(data);
+        setFilteredArtisans(data);
 
-        setArtisans(normalized);
-        setFilteredArtisans(normalized);
-
-        // 🔹 départements uniques (id / code / nom)
-        const uniqueDepartements = Array.from(
+        // Départements uniques
+        const uniqueDeps = Array.from(
           new Map(
-            normalized
+            data
               .map((a) => a.departement)
               .filter(Boolean)
               .map((d) => [d.id, d])
           ).values()
         );
 
-        setDepartements(uniqueDepartements);
+        setDepartements(uniqueDeps);
       } catch (error) {
         console.error("Erreur chargement Services :", error);
       } finally {
@@ -69,70 +46,50 @@ export default function Services() {
     loadArtisans();
   }, []);
 
-  /**
-   * Application des filtres
-   */
-  const handleSearch = () => {
+  // Application automatique des filtres
+  useEffect(() => {
     let results = [...artisans];
 
     if (departement !== "Tous") {
       results = results.filter(
-        (a) => String(a.departement_id) === String(departement)
+        (a) => String(a.departement?.id) === String(departement)
       );
     }
 
     if (ville.trim()) {
       results = results.filter((a) =>
-        normalize(a.ville).includes(normalize(ville))
+        normalize(a.ville?.nom).includes(normalize(ville))
       );
     }
 
     setFilteredArtisans(results);
-  };
+  }, [artisans, departement, ville]);
 
   if (loading) {
-    return (
-      <p className="text-center py-5" aria-live="polite">
-        Chargement des artisans...
-      </p>
-    );
+    return <p className="text-center py-5">Chargement des artisans…</p>;
   }
 
   return (
     <main className="container py-4">
-      {/* Fil d’Ariane */}
       <nav aria-label="Fil d’Ariane">
         <p className="small text-muted">
-          <NavLink to="/" className="nav-link d-inline p-0">
-            Accueil
-          </NavLink>{" "}
+          <NavLink to="/" className="nav-link d-inline p-0">Accueil</NavLink>{" "}
           / <strong>Services</strong>
         </p>
       </nav>
 
-      <h1 className="fw-bold mb-4">
-        Trouver un prestataire de services
-      </h1>
+      <h1 className="fw-bold mb-4">Trouver un prestataire de services</h1>
 
       <div className="row">
-        {/* FILTRES */}
         <aside className="col-md-3 mb-4">
           <form
             className="border rounded p-3 bg-light"
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSearch();
-            }}
+            onSubmit={(e) => e.preventDefault()}
           >
-            <h2 className="h6 fw-bold mb-3">
-              Filtrer les résultats
-            </h2>
+            <h2 className="h6 fw-bold mb-3">Filtrer les résultats</h2>
 
-            {/* Département */}
             <div className="mb-3">
-              <label className="form-label small">
-                Département
-              </label>
+              <label className="form-label small">Département</label>
               <select
                 className="form-select form-select-sm"
                 value={departement}
@@ -147,11 +104,8 @@ export default function Services() {
               </select>
             </div>
 
-            {/* Ville */}
             <div className="mb-3">
-              <label className="form-label small">
-                Ville
-              </label>
+              <label className="form-label small">Ville</label>
               <input
                 type="text"
                 className="form-control form-control-sm"
@@ -162,20 +116,18 @@ export default function Services() {
             </div>
 
             <button
-              type="submit"
+              type="button"
               className="btn btn-primary btn-sm w-100"
+              onClick={() => handleSearch()}
             >
               Rechercher
             </button>
           </form>
         </aside>
 
-        {/* LISTE */}
         <section className="col-md-9">
           <p className="small text-muted mb-3">
-            {filteredArtisans.length} artisan
-            {filteredArtisans.length > 1 ? "s" : ""} trouvé
-            {filteredArtisans.length > 1 ? "s" : ""}
+            {filteredArtisans.length} artisan{filteredArtisans.length > 1 ? "s" : ""}
           </p>
 
           {filteredArtisans.length === 0 && (
@@ -185,15 +137,15 @@ export default function Services() {
           )}
 
           <div className="row g-4">
-            {filteredArtisans.map((artisan) => (
+            {filteredArtisans.map((a) => (
               <ArtisanCard
-                key={artisan.id}
-                id={artisan.id}
-                title={artisan.nom}
-                job={artisan.specialite}
-                city={artisan.ville}
-                note={artisan.note}
-                image={artisan.image}
+                key={a.id}
+                id={a.id}
+                title={a.nom}
+                job={a.specialite}
+                city={a.ville?.nom}
+                note={a.note}
+                image={a.image}
               />
             ))}
           </div>
