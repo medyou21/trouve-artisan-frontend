@@ -143,7 +143,7 @@ export default function Services() {
                 id={a.id}
                 title={a.nom}
                 job={a.specialite}
-                city={a.ville?.nom}
+                city={a.ville}
                 note={a.note}
                 image={a.image}
               />
