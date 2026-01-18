@@ -38,8 +38,8 @@ export default function Services() {
           nom: a.nom,
           specialite: a.specialite,
           ville: a.ville,
-          departement: a.ville_obj?.departement || null,
-          departement_id: a.ville_obj?.departement?.id || null,
+          departement: a.ville?.departement || null,
+          departement_id: a.ville?.departement?.id || null,
           note: a.note,
           image: a.image,
         }));
