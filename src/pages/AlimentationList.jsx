@@ -3,9 +3,6 @@ import { useEffect, useState } from "react";
 import ArtisanCard from "../components/artisan/ArtisanCard";
 import { getArtisansByCategorie } from "../services/artisan.service";
 
-/**
- * Page Services – Alimentation
- */
 export default function Services() {
   const [artisans, setArtisans] = useState([]);
   const [filteredArtisans, setFilteredArtisans] = useState([]);
@@ -15,39 +12,32 @@ export default function Services() {
   const [departement, setDepartement] = useState("Tous");
   const [ville, setVille] = useState("");
 
-  /**
-   * Normalisation des chaînes
-   */
+  // 🔹 Normalisation
   const normalize = (str = "") =>
-    str
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase();
+    str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-  /**
-   * Chargement des artisans
-   */
+  // 🔹 Chargement des artisans
   useEffect(() => {
     async function loadArtisans() {
       try {
-        // ⚠️ utiliser l'ID réel de la catégorie Alimentation
+        // ⚠️ ID réel de la catégorie Alimentation
         const data = await getArtisansByCategorie(2);
 
+        // 🔹 Normalisation
         const normalized = data.map((a) => ({
           id: a.id,
-          nom: a.nom,
-          specialite: a.specialite,
-          ville: a.ville,
-          departement: a.ville?.departement || null,
-          departement_id: a.ville?.departement?.id || null,
-          note: a.note,
-          image: a.image,
+          nom: a.nom || "Indisponible",
+          specialite: a.specialite || "Non précisée",
+          ville: a.ville || "Indisponible",
+          departement: a.departement || null,
+          note: a.note || 0,
+          image: a.image || "/images/placeholder.jpg",
         }));
 
         setArtisans(normalized);
         setFilteredArtisans(normalized);
 
-        // 🔹 départements uniques (id / code / nom)
+        // 🔹 Départements uniques
         const uniqueDeps = Array.from(
           new Map(
             normalized
@@ -68,30 +58,31 @@ export default function Services() {
     loadArtisans();
   }, []);
 
-  /**
-   * Application des filtres
-   */
+  // 🔹 Appliquer les filtres à chaque changement
+  useEffect(() => {
+    handleSearch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [artisans, departement, ville]);
+
   const handleSearch = () => {
     let results = [...artisans];
 
+    // 🔹 Filtre département
     if (departement !== "Tous") {
       results = results.filter(
-        (a) => String(a.departement_id) === String(departement)
+        (a) => String(a.departement?.id) === String(departement)
       );
     }
 
+    // 🔹 Filtre ville
     if (ville.trim()) {
-      results = results.filter((a) =>
-        normalize(a.ville).includes(normalize(ville))
-      );
+      results = results.filter((a) => normalize(a.ville).includes(normalize(ville)));
     }
 
     setFilteredArtisans(results);
   };
 
-  if (loading) {
-    return <p className="text-center py-5">Chargement des artisans…</p>;
-  }
+  if (loading) return <p className="text-center py-5">Chargement des artisans…</p>;
 
   return (
     <main className="container py-4">
@@ -105,21 +96,13 @@ export default function Services() {
         </p>
       </nav>
 
-      <h1 className="fw-bold mb-4">
-        Trouver un artisan de l’alimentation
-      </h1>
+      <h1 className="fw-bold mb-4">Trouver un artisan de l’alimentation</h1>
 
       <div className="row">
         {/* FILTRES */}
         <aside className="col-md-3 mb-4">
-          <form
-            className="border rounded p-3 bg-light"
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSearch();
-            }}
-          >
-            <h2 className="h6 fw-bold mb-3">Filtrer les résultats</h2>
+          <div className="border rounded p-3 bg-light">
+            <h6 className="fw-bold mb-3">Filtrer les résultats</h6>
 
             {/* Département */}
             <div className="mb-3">
@@ -150,13 +133,16 @@ export default function Services() {
               />
             </div>
 
-            <button type="submit" className="btn btn-primary btn-sm w-100">
+            <button
+              className="btn btn-primary btn-sm w-100"
+              onClick={handleSearch}
+            >
               Rechercher
             </button>
-          </form>
+          </div>
         </aside>
 
-        {/* LISTE */}
+        {/* LISTE ARTISANS */}
         <section className="col-md-9">
           <p className="small text-muted mb-3">
             {filteredArtisans.length} artisan
