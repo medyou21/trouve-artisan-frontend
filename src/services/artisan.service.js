@@ -19,9 +19,9 @@ function normalizeArtisan(a) {
     id: a.id,
     nom: a.nom || "Indisponible",
     specialite: a.specialite_obj?.nom || "Non précisée",
-    ville: a.ville_obj?.nom || "Indisponible",
-    departement: a.ville_obj?.departement
-      ? { id: a.ville_obj.departement.id, code: a.ville_obj.departement.code, nom: a.ville_obj.departement.nom }
+    ville: a.ville?.nom || "Indisponible",
+    departement: a.ville?.departement
+      ? { id: a.ville.departement.id, code: a.ville.departement.code, nom: a.ville.departement.nom }
       : null,
     categorie: a.categorie?.nom || "",
     note: Number(a.note) || 0,
