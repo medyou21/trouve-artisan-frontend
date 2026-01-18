@@ -58,7 +58,7 @@ export default function Services() {
 
     if (ville.trim()) {
       results = results.filter((a) =>
-        normalize(a.ville?.nom).includes(normalize(ville))
+        normalize(a.ville).includes(normalize(ville))
       );
     }
 
