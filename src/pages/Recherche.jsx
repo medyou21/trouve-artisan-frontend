@@ -7,39 +7,32 @@ export default function Recherche() {
   const [params] = useSearchParams();
   const query = params.get("query") || "";
 
-  // 🔹 États
   const [artisans, setArtisans] = useState([]);
   const [filteredArtisans, setFilteredArtisans] = useState([]);
   const [categories, setCategories] = useState([]);
   const [departements, setDepartements] = useState([]);
 
-  const [categorie, setCategorie] = useState("Tous"); // id ou "Tous"
-  const [departement, setDepartement] = useState("Tous"); // id ou "Tous"
+  const [categorie, setCategorie] = useState("Tous");
+  const [departement, setDepartement] = useState("Tous");
   const [ville, setVille] = useState("");
-
   const [loading, setLoading] = useState(true);
 
-  // 🔹 Normalisation texte
   const normalize = (str = "") =>
-    str
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase();
+    str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-  // 🔹 Chargement initial
   useEffect(() => {
     async function loadArtisans() {
       try {
         const data = await getAllArtisans();
-
         setArtisans(data);
         setFilteredArtisans(data);
 
-        // 🔹 Filtres dynamiques
+        // 🔹 Catégories uniques
         setCategories(
           [...new Set(data.map((a) => a.categorie?.nom).filter(Boolean))].sort()
         );
 
+        // 🔹 Départements uniques
         const uniqueDeps = Array.from(
           new Map(
             data
@@ -49,60 +42,45 @@ export default function Recherche() {
           ).values()
         );
         setDepartements(uniqueDeps);
-      } catch (error) {
-        console.error("Erreur chargement artisans :", error);
+      } catch (err) {
+        console.error("Erreur chargement artisans :", err);
       } finally {
         setLoading(false);
       }
     }
-
     loadArtisans();
   }, []);
 
-  // 🔹 Synchronisation avec la recherche dans le header
   useEffect(() => {
     handleSearch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, artisans, categorie, departement, ville]);
 
-  // 🔹 Application des filtres combinés
   const handleSearch = () => {
     let results = artisans;
 
-    // 🔹 Recherche par nom
     if (query.trim()) {
-      results = results.filter((a) =>
-        normalize(a.nom).includes(normalize(query))
-      );
+      results = results.filter((a) => normalize(a.nom).includes(normalize(query)));
     }
 
-    // 🔹 Filtre catégorie
     if (categorie !== "Tous") {
-      results = results.filter(
-        (a) => normalize(a.categorie?.nom) === normalize(categorie)
-      );
+      results = results.filter((a) => normalize(a.categorie?.nom) === normalize(categorie));
     }
 
-    // 🔹 Filtre département
     if (departement !== "Tous") {
       results = results.filter(
         (a) => String(a.ville?.departement?.id) === departement
       );
     }
 
-    // 🔹 Filtre ville
     if (ville.trim()) {
-      results = results.filter((a) =>
-        normalize(a.ville?.nom).includes(normalize(ville))
-      );
+      results = results.filter((a) => normalize(a.ville?.nom).includes(normalize(ville)));
     }
 
     setFilteredArtisans(results);
   };
 
-  if (loading) {
-    return <p className="text-center py-5">Chargement...</p>;
-  }
+  if (loading) return <p className="text-center py-5">Chargement...</p>;
 
   return (
     <div className="container py-4">
@@ -111,12 +89,11 @@ export default function Recherche() {
       </h2>
 
       <div className="row">
-        {/* 🔹 FILTRES */}
+        {/* FILTRES */}
         <aside className="col-md-3 mb-4">
           <div className="border rounded p-3 bg-light">
             <h6 className="fw-bold mb-3">Filtres</h6>
 
-            {/* Catégorie */}
             <div className="mb-3">
               <label className="form-label small">Catégorie</label>
               <select
@@ -126,14 +103,11 @@ export default function Recherche() {
               >
                 <option value="Tous">Toutes</option>
                 {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
+                  <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
             </div>
 
-            {/* Département */}
             <div className="mb-3">
               <label className="form-label small">Département</label>
               <select
@@ -150,7 +124,6 @@ export default function Recherche() {
               </select>
             </div>
 
-            {/* Ville */}
             <div className="mb-3">
               <label className="form-label small">Ville</label>
               <input
@@ -162,20 +135,16 @@ export default function Recherche() {
               />
             </div>
 
-            <button
-              className="btn btn-primary btn-sm w-100"
-              onClick={handleSearch}
-            >
+            <button className="btn btn-primary btn-sm w-100" onClick={handleSearch}>
               Rechercher
             </button>
           </div>
         </aside>
 
-        {/* 🔹 LISTE DES ARTISANS */}
+        {/* LISTE ARTISANS */}
         <section className="col-md-9">
           <p className="small text-muted mb-3">
-            {filteredArtisans.length} artisan
-            {filteredArtisans.length > 1 ? "s" : ""}
+            {filteredArtisans.length} artisan{filteredArtisans.length > 1 ? "s" : ""}
           </p>
 
           <div className="row g-4">
@@ -184,8 +153,8 @@ export default function Recherche() {
                 key={artisan.id}
                 id={artisan.id}
                 title={artisan.nom}
-                job={artisan.specialite}
-                city={artisan.ville}
+                job={artisan.specialite_obj?.nom}
+                city={artisan.ville?.nom}
                 note={artisan.note}
                 image={artisan.image}
               />
