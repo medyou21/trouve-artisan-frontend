@@ -98,8 +98,13 @@ export default function Artisan() {
               <div className="mb-2">{renderStars(artisan.note)}</div>
 
               <p><strong>Spécialité :</strong> {artisan.specialite} {artisan.categorie && `(${artisan.categorie})`}</p>
-              <p><strong>Localisation :</strong> {artisan.ville} {artisan.departement?.nom && `(${artisan.departement.nom})`}</p>
-              <p>
+<p>
+  <strong>Localisation :</strong>{" "}
+  {artisan.ville}{" "}
+  {artisan.departement
+    ? `(${artisan.departement.code} - ${artisan.departement.nom})`
+    : ""}
+</p>              <p>
                 <strong>Site web :</strong>{" "}
                 {artisan.site_web ? (
                   <a href={artisan.site_web} target="_blank" rel="noopener noreferrer">{artisan.site_web}</a>
