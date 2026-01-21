@@ -1,28 +1,40 @@
-// Bootstrap functions (OBLIGATOIRE en premier)
+/* ==================================================
+   Bootstrap SCSS – Custom build
+   ================================================== */
+
+/* 1️⃣ Fonctions Bootstrap (OBLIGATOIRE en premier) */
 @import "bootstrap/scss/functions";
 
-// Tes variables AVANT Bootstrap
+/* 2️⃣ Variables personnalisées (override Bootstrap) */
 @import "../abstracts/variables";
 
-// Bootstrap core
+/* 3️⃣ Variables & maps Bootstrap */
 @import "bootstrap/scss/variables";
 @import "bootstrap/scss/maps";
-@import "bootstrap/scss/mixins";
-@import "bootstrap/scss/root";
 
-// Bootstrap components (choisis ce que tu veux)
+/* 4️⃣ Mixins Bootstrap */
+@import "bootstrap/scss/mixins";
+
+/* 5️⃣ Base Bootstrap */
+@import "bootstrap/scss/root";
 @import "bootstrap/scss/reboot";
 @import "bootstrap/scss/type";
 @import "bootstrap/scss/images";
+
+/* 6️⃣ Layout */
 @import "bootstrap/scss/containers";
 @import "bootstrap/scss/grid";
+
+/* 7️⃣ Components */
 @import "bootstrap/scss/buttons";
 @import "bootstrap/scss/forms";
 @import "bootstrap/scss/nav";
 @import "bootstrap/scss/navbar";
 @import "bootstrap/scss/card";
+
+/* 8️⃣ Utilities */
 @import "bootstrap/scss/utilities";
 
-// Optionnel : helpers & utilities API
+/* 9️⃣ Helpers & Utilities API */
 @import "bootstrap/scss/helpers";
 @import "bootstrap/scss/utilities/api";
