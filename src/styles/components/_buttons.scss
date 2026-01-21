@@ -1,17 +1,20 @@
-button {
-  white-space: nowrap;
-  cursor: pointer;
-  border: none;
-}
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
 
 .btn-blue {
   background-color: $blue;
   color: #fff;
   font-weight: 600;
   @include transition(background-color, color);
+}
 
-  &:hover {
-    background-color: $blue-dark;
-    color: #fff;
-  }
+.btn-blue:hover {
+  background-color: $blue-dark;
+  color: #fff;
+}
+
+button {
+  white-space: nowrap;
+  cursor: pointer;
+  border: none;
 }

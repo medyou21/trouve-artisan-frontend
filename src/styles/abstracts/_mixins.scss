@@ -1,9 +1,20 @@
+// 🔹 Transition mixin
+// Usage : @include transition(all); ou @include transition(opacity, transform);
+$transition-fast: 0.3s !default;
 @mixin transition($props...) {
-  transition: $props $transition-fast;
+  @if length($props) == 0 {
+    transition: all $transition-fast;
+  } @else {
+    transition: #{join($props, ', ')} $transition-fast;
+  }
 }
 
+// 🔹 Flex center mixin
+// Usage : @include flex-center;
 @mixin flex-center {
   display: flex;
   justify-content: center;
   align-items: center;
+  // Optionnel : ajouter flex-wrap si besoin
+  // flex-wrap: wrap;
 }
