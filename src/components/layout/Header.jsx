@@ -107,17 +107,20 @@ export default function Header() {
               </NavLink>
             </li>
 
-            {categories.map((cat) => (
-              <li className="nav-item" key={cat.id}>
-                <NavLink
-                  to={`/${cat.slug}`}
-                  className="nav-link"
-                  onClick={closeMenu}
-                >
-                  {cat.nom}
-                </NavLink>
-              </li>
-            ))}
+            {[...categories]
+  .sort((a, b) => a.id - b.id)
+  .map((cat) => (
+    <li className="nav-item" key={cat.id}>
+      <NavLink
+        to={`/${cat.slug}`}
+        className="nav-link"
+        onClick={closeMenu}
+      >
+        {cat.nom}
+      </NavLink>
+    </li>
+  ))}
+
           </ul>
 
           {/* Barre de recherche */}
