@@ -139,7 +139,8 @@ export default function Fabrication() {
         {/* LISTE ARTISANS */}
         <section className="col-md-9">
           <p className="small text-muted mb-3">
-            {filteredArtisans.length} artisan{filteredArtisans.length > 1 ? "s" : ""}
+            {filteredArtisans.length} artisan{filteredArtisans.length > 1 ? "s" : " "}
+            dans la catégorie Fabrication
           </p>
 
           {filteredArtisans.length === 0 && (
