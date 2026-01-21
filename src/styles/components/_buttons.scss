@@ -1,20 +1,24 @@
-@use '../abstracts/variables' as *;
+@use '../abstracts/variables' as v;
 @use '../abstracts/mixins' as *;
 
-.btn-blue {
-  background-color: $blue;
+/* ⚠️ PAS D’IMPORT BOOTSTRAP ICI */
+
+.btn.btn-blue {
+  background-color: v.$blue;
   color: #fff;
   font-weight: 600;
-  @include transition(background-color, color);
-}
+  border: none;
 
-.btn-blue:hover {
-  background-color: $blue-dark;
-  color: #fff;
+  @include transition(background-color, color);
+
+  &:hover,
+  &:focus {
+    background-color: v.$blue-dark;
+    color: #fff;
+  }
 }
 
 button {
   white-space: nowrap;
   cursor: pointer;
-  border: none;
 }
