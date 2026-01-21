@@ -1,7 +1,21 @@
+// Couleurs
 $blue: #0b6fb8;
 $blue-dark: #084f85;
 $gray-light: #f4f6f8;
 $yellow: #f6c343;
 
+// Typographie
 $font-base: "Graphik", sans-serif;
+
+// Transitions
 $transition-fast: 0.3s ease;
+
+
+ $grid-breakpoints: (
+    xs: 0,
+    sm: 576px,
+    md: 768px,
+    lg: 992px,
+    xl: 1200px,
+    xxl: 1400px
+  );

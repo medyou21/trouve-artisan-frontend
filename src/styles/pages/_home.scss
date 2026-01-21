@@ -1,0 +1,24 @@
+.hero-section {
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  min-height: 60vh;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 1;
+}
+
+.hero-section h1,
+.hero-section h2 {
+  position: relative;
+  z-index: 2;
+  color: #fff;
+}
+
+@media (min-width: 768px) {
+  .hero-section { min-height: 75vh; }
+}

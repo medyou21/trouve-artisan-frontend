@@ -1,18 +1,34 @@
-@use "vendors/bootstrap";
-@use "abstracts/variables";
-@use "abstracts/mixins";
+// 1️⃣ Abstracts : variables, mixins, functions
+@use 'abstracts/functions';
+@use 'abstracts/variables' as *;
+@use 'abstracts/mixins' as *;
 
-@use "base/reset";
-@use "base/base";
-@use "base/typography";
+// 2️⃣ Vendors : Bootstrap (UNIQUE import ici)
 
-@use "components/buttons";
-@use "components/cards";
-@use "components/forms";
+@use 'bootstrap/scss/bootstrap';
+//@use 'vendors/bootstrap';
 
-@use "layout/header";
-@use "layout/navigation";
-@use "layout/hero";
+// 3️⃣ Base
+@use 'base/base';
+@use 'base/typography';
+@use 'base/utilities';
+@use 'base/reset';
 
-@use "pages/notfound";
-@use "themes/default";
+
+// 4️⃣ Layout
+@use 'layout/header';
+@use 'layout/hero';
+@use 'layout/navigation';
+
+// 5️⃣ Components
+@use 'components/buttons';
+@use 'components/cards';
+@use 'components/forms';
+
+// 6️⃣ Pages
+@use 'pages/home';
+@use 'pages/notfound';
+
+
+// themes
+@use 'themes/default';

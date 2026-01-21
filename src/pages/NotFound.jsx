@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet";
-
+import { Helmet } from "react-helmet-async";
 export default function NotFound() {
   return (
     <div className="container min-vh-100 d-flex align-items-center">

@@ -1,15 +1,6 @@
-.text-blue {
-  color: $blue-dark;
-}
+@use '../abstracts/variables' as *;
 
-.text-light-blue {
-  color: $blue;
-}
-
-.fw-bold {
-  font-weight: 700;
-}
-
-.small {
-  font-size: 0.875rem;
-}
+.text-blue { color: $blue-dark; }
+.text-light-blue { color: $blue; }
+.fw-bold { font-weight: 700; }
+.small { font-size: 0.875rem; }
