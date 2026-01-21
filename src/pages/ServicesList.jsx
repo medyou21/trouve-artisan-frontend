@@ -78,7 +78,7 @@ export default function Services() {
         </p>
       </nav>
 
-      <h1 className="fw-bold mb-4">Trouver un prestataire de services</h1>
+      <h1 className="fw-bold text-blue mb-4">Trouver un prestataire de services</h1>
 
       <div className="row">
         <aside className="col-md-3 mb-4">
