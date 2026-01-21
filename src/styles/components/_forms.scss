@@ -1,0 +1,15 @@
+input.form-control,
+textarea.form-control,
+select.form-select {
+  border-radius: 6px;
+  border: 1px solid #ced4da;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  @include transition(border-color, box-shadow);
+
+  &:focus {
+    border-color: $blue;
+    box-shadow: 0 0 0 0.2rem rgba(11, 111, 184, 0.25);
+    outline: none;
+  }
+}

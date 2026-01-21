@@ -1,0 +1,16 @@
+body {
+  font-family: $font-base;
+  background-color: #fff;
+  color: #222;
+  line-height: 1.5;
+}
+
+img {
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  display: block;
+  margin: 0 auto;
+  border-radius: 8px;
+}
