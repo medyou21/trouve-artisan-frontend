@@ -20,7 +20,7 @@ export default function Services() {
   useEffect(() => {
     async function loadArtisans() {
       try {
-        const data = await getArtisansByCategorie(4); // ID Services
+        const data = await getArtisansByCategorie(2); // ID Services
 
         setArtisans(data);
         setFilteredArtisans(data);

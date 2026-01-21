@@ -21,7 +21,7 @@ export default function Services() {
     async function loadArtisans() {
       try {
         // ⚠️ ID de la catégorie Alimentation
-        const data = await getArtisansByCategorie(2);
+        const data = await getArtisansByCategorie(4);
 
         setArtisans(data);
         setFilteredArtisans(data);
