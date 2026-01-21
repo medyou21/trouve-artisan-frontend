@@ -136,7 +136,7 @@ export default function Services() {
           <p className="small text-muted mb-3">
   {filteredArtisans.length}{" "}
   artisan{filteredArtisans.length > 1 ? "s" : ""}{" "}
-  dans la catégorie {categoryName}
+  dans la catégorie {categorie}
 </p>
 
 
