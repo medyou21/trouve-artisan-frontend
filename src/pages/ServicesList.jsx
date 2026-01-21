@@ -126,11 +126,13 @@ export default function Services() {
         </aside>
 
         <section className="col-md-9">
-         <p className="small text-muted mb-3">
+        <p className="small text-muted mb-3">
   {filteredArtisans.length}{" "}
   artisan{filteredArtisans.length > 1 ? "s" : ""}{" "}
-  dans la catégorie {categoryName}
+  {filteredArtisans.length > 0 &&
+    `dans la catégorie ${filteredArtisans[0].categorie}`}
 </p>
+
 
 
           {filteredArtisans.length === 0 && (
