@@ -87,7 +87,7 @@ export default function Fabrication() {
         </p>
       </nav>
 
-      <h1 className="fw-bold mb-4">Trouver un artisan de la fabrication</h1>
+      <h1 className="fw-bold text-blue mb-4">Trouver un artisan de la fabrication</h1>
 
       <div className="row">
         {/* FILTRES */}

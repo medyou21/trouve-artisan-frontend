@@ -91,7 +91,7 @@ export default function Recherche() {
 
   return (
     <div className="container py-4">
-      <h2 className="fw-bold mb-4">
+      <h2 className="fw-bold text-blue mb-4">
         {query ? `Résultats pour « ${query} »` : "Tous les artisans"}
       </h2>
 
