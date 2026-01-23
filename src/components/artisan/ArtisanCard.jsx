@@ -1,3 +1,17 @@
+import { Link } from "react-router-dom";
+
+/**
+ * Carte artisan affichée dans les listes
+ * @param {string|number} id - Identifiant de l’artisan
+ * @param {string} title - Nom de l’artisan
+ * @param {string} job - Spécialité
+ * @param {string} city - Ville
+ * @param {string} department - Département
+ * @param {string} category - Catégorie
+ * @param {string} image - URL de l’image
+ * @param {number} note - Note sur 5
+ */
+
 export default function ArtisanCard({
   id,
   title,
@@ -10,8 +24,9 @@ export default function ArtisanCard({
   const safeNote = Number.isFinite(note) ? note : 0;
 
   const fullStars = Math.round(safeNote);
-  const emptyStars = 5 - fullStars;
+  const emptyStars = Math.max(0, 5 - fullStars);
 
+  // ✅ Ville + code département
   const location =
     city && department?.code
       ? `${city} (${department.code})`
@@ -33,7 +48,7 @@ export default function ArtisanCard({
             {title || "Nom indisponible"}
           </h3>
 
-          <p className="mb-1">
+          <p className="mb-1" aria-label={`Note ${safeNote} sur 5`}>
             <span className="text-warning">{"★".repeat(fullStars)}</span>
             <span className="text-muted">{"★".repeat(emptyStars)}</span>
             <span className="ms-2">({safeNote.toFixed(1)})</span>
@@ -49,12 +64,14 @@ export default function ArtisanCard({
             {location}
           </p>
 
-          <Link
-            to={`/artisan/${id}`}
-            className="btn btn-blue btn-sm mt-auto"
-          >
-            Voir le profil
-          </Link>
+          {id && (
+            <Link
+              to={`/artisan/${id}`}
+              className="btn btn-blue btn-sm mt-auto"
+            >
+              Voir le profil
+            </Link>
+          )}
         </div>
       </article>
     </div>
