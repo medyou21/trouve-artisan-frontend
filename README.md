@@ -1,80 +1,104 @@
-🎨 Trouve-Artisan – Frontend
+# 🎨 Trouve-Artisan – Frontend
 
-Frontend du projet Trouve-Artisan, une plateforme permettant de rechercher des artisans par catégorie, ville, département et spécialité.
+Frontend du projet **Trouve-Artisan**, une plateforme permettant de rechercher des artisans par **catégorie, ville, département et spécialité**, et de les contacter directement via un formulaire.
 
 Cette application consomme l’API REST du backend Trouve-Artisan et est conçue pour une expérience mobile-first, accessible et performante.
 
-🚀 Technologies utilisées
+---
 
-React
+## 🚀 Technologies utilisées
+- React + Vite
+- React Router DOM
+- Bootstrap / CSS
+- JavaScript (ES6+)
+- ESLint
+- Sass (SCSS)
 
-Vite
+---
 
-JavaScript (ES6+)
+## 📁 Structure du projet
 
-
-React Router DOM
-
-Bootstrap / CSS
-
-ESLint
-
-📁 Structure du projet
-trouve-artisan-frontend/
+frontend/
 │
-├── src/
-│   ├── assets/
-│   ├── components/
-│   │   ├── ArtisanCard.jsx
-│   │   ├── Navbar.jsx
-│   │   └── Footer.jsx
-│   ├── pages/
-│   │   ├── Home.jsx
-│   │   ├── ArtisanDetail.jsx
-│   │   └── Search.jsx
-│   ├── services/
-│   │   └── api.js
-│   ├── App.jsx
-│   └── main.jsx
-│
+├── fonts/
+├── node_modules/
 ├── public/
-├── .env
+├── src/
+│ │ ├── components/
+│ │ ├── artisan/
+│ │ │ ├── ArtisanCard.jsx
+│ │ │ 
+│ │ ├── home/
+│ │ │ ├── FeaturedArtisans.jsx
+│ │ │ ├── Hero.jsx
+│ │ │ └── HowItWorks.jsx
+│ │ └── layout/
+│ ├── pages/
+│ │ ├── AlimentationList.jsx
+│ │ ├── Artisan.jsx
+│ │ ├── BatimentList.jsx
+│ │ ├── Category.jsx
+│ │ ├── FabricationList.jsx
+│ │ ├── Home.jsx
+│ │ ├── Legal.jsx
+│ │ ├── NotFound.jsx
+│ │ ├── Recherche.jsx
+│ │ └── ServicesList.jsx
+│ ├── services/
+│ │ ├── api.js
+│ │ └── artisan.service.js
+│ ├── styles/
+│ │ ├── abstracts/
+│ │ ├── base/
+│ │ ├── components/
+│ │ ├── layout/
+│ │ ├── pages/
+│ │ ├── themes/
+│ │ ├── vendors/
+│ │ └── main.scss
+│ ├── App.css
+│ ├── App.jsx
+│ ├── index.css
+│ ├── main.jsx
+│ └── router.jsx
 ├── index.html
+├── package-lock.json
 ├── package.json
-└── README.md
+├── README.md
 
-⚙️ Installation
-1️⃣ Cloner le projet
+
+
+---
+
+## ⚙️ Installation
+
+### 1️⃣ Cloner le projet
+```bash
 git clone https://github.com/TON_REPO/trouve-artisan-frontend.git
 cd trouve-artisan-frontend
-
 2️⃣ Installer les dépendances
 npm install
-
-🔧 Configuration des variables d’environnement
-
-Créer un fichier .env à la racine du projet :
+3️⃣ Configuration des variables d’environnement
+Créer un fichier .env à la racine :
 
 VITE_API_URL=http://localhost:8080
-
-
-📌 Important
-
 Avec Vite, seules les variables commençant par VITE_ sont accessibles dans le code frontend.
-
 Ne jamais commit le fichier .env.
 
-▶️ Lancer l’application
-Mode développement
+4️⃣ Lancer l’application
 npm run dev
+Application accessible sur : http://localhost:5173
 
-
-L’application sera accessible sur :
-
-http://localhost:5173
+🌐 Fonctionnalités principales
+✅ Affichage de la liste des artisans
+✅ Consultation du détail d’un artisan
+✅ Filtrage par catégorie
+✅ Recherche par nom
+✅ Mise en avant des artisans “top”
+✅ Formulaire de contact avec artisan_id
+✅ Connexion dynamique à l’API backend
 
 🔗 Connexion à l’API Backend
-
 Exemple d’appel API :
 
 import api from "../services/api";
@@ -82,58 +106,21 @@ import api from "../services/api";
 api.get("/api/artisans").then(response => {
   console.log(response.data);
 });
-
-🌐 Fonctionnalités principales
-
-✅ Affichage de la liste des artisans
-
-✅ Consultation du détail d’un artisan
-
-✅ Filtrage par catégorie
-
-✅ Recherche par nom
-
-✅ Mise en avant des artisans “top”
-
-✅ Connexion dynamique à l’API backend
-
 🚀 Déploiement sur Vercel
-1️⃣ Créer un projet Vercel
-
-Se connecter à Vercel
-
-Importer le dépôt GitHub du frontend
-
-Framework détecté automatiquement : Vite / React
-
-2️⃣ Variables d’environnement (Vercel)
-
-Dans Project Settings → Environment Variables :
+1️⃣ Créer un projet Vercel et importer le dépôt GitHub du frontend.
+2️⃣ Définir les variables d’environnement :
 
 VITE_API_URL=https://ton-backend.up.railway.app
-
-
 ou
 
 VITE_API_URL=https://ton-backend.cleverapps.io
-
-
-📌 Après modification des variables → redeployer le projet.
-
-3️⃣ Build
-
-Commande utilisée par Vercel :
+3️⃣ Lancer le build :
 
 npm run build
-
-
-Dossier de sortie :
-
-dist/
+Dossier de sortie : dist/
 
 🔐 CORS – Configuration Backend requise
-
-Côté backend, autoriser le frontend Vercel :
+Autoriser le frontend Vercel côté backend :
 
 app.use(
   cors({
@@ -141,64 +128,23 @@ app.use(
     credentials: true,
   })
 );
-
-
 Variable backend :
 
 FRONT_URL=https://ton-frontend.vercel.app
-
 🧪 Tests rapides
+API : https://ton-backend.up.railway.app/api/artisans
 
-Tester l’API directement :
+Frontend : https://ton-frontend.vercel.app
 
-https://ton-backend.up.railway.app/api/artisans
-
-
-Tester le frontend :
-
-https://ton-frontend.vercel.app
-
-⚠️ Problèmes fréquents
-❌ Blocked by CORS policy
-
-➡️ Vérifier :
-
-FRONT_URL côté backend
-
-VITE_API_URL côté frontend
-
-Redéploiement effectué
-
-❌ Uncaught ReferenceError: React is not defined
-
-➡️ Avec Vite + React 17+ :
-
-Ne pas importer React inutilement
-
-Vérifier la présence de @vitejs/plugin-react
-
-❌ Page blanche en production
-
-➡️ Vérifier :
-
-URL API correcte
-
-Backend accessible en HTTPS
-
-Console navigateur
-
-🔗 Lien avec le Backend
-
-Backend API : https://github.com/TON_REPO/backend-trouve-artisan
-
-Frontend : https://github.com/TON_REPO/trouve-artisan-frontend
 
 📌 Auteur
-
 👤 Mohamed Hamdi
 💼 Développeur Web & Ingénieur Systèmes
 📍 France
 
-📄 Licence
+📄 Licence : Projet open-source, libre d’utilisation à des fins pédagogiques ou professionnelles.
 
-Projet open-source, libre d’utilisation à des fins pédagogiques ou professionnelles.
+
+
+
+
