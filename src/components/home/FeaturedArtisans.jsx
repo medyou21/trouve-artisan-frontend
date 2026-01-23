@@ -32,21 +32,36 @@ export default function FeaturedArtisans() {
   }, []);
 
   if (loading) {
-    return <p className="text-center py-5" role="status">Chargement des artisans...</p>;
+    return (
+      <p className="text-center py-5" role="status">
+        Chargement des artisans...
+      </p>
+    );
   }
 
   if (error) {
-    return <p className="text-center py-5 text-danger">{error}</p>;
+    return (
+      <p className="text-center py-5 text-danger">
+        {error}
+      </p>
+    );
   }
 
   if (artisans.length === 0) {
-    return <p className="text-center py-5">Aucun artisan disponible pour le moment.</p>;
+    return (
+      <p className="text-center py-5">
+        Aucun artisan disponible pour le moment.
+      </p>
+    );
   }
 
   return (
     <section className="py-5" aria-labelledby="featured-artisans-title">
       <div className="container">
-        <h2 id="featured-artisans-title" className="text-center text-blue fw-bold mb-4">
+        <h2
+          id="featured-artisans-title"
+          className="text-center text-blue fw-bold mb-4"
+        >
           Les artisans du mois
         </h2>
 
@@ -58,6 +73,7 @@ export default function FeaturedArtisans() {
               title={artisan.nom}
               job={artisan.specialite}
               city={artisan.ville}
+              department={artisan.departement} 
               image={artisan.image}
               note={artisan.note}
             />
