@@ -170,6 +170,7 @@ export default function Recherche() {
                 title={artisan.nom}
                 job={artisan.specialite}
                 city={artisan.ville}
+                 department={artisan.departement}
                 note={artisan.note}
                 image={artisan.image}
               />
