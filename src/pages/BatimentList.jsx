@@ -154,16 +154,18 @@ export default function Batiment() {
 
           <div className="row g-4">
             {filteredArtisans.map((a) => (
-              <ArtisanCard
-                key={a.id}
-                id={a.id}
-                title={a.nom}
-                job={a.specialite}
-                city={a.ville}
-                note={a.note}
-                image={a.image}
-              />
-            ))}
+  <ArtisanCard
+    key={a.id}
+    id={a.id}
+    title={a.nom}
+    job={a.specialite}
+    city={a.ville}
+    department={a.departement}  
+    note={a.note}
+    image={a.image}
+  />
+))}
+
           </div>
         </section>
       </div>
