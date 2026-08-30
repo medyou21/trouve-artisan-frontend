@@ -10,6 +10,8 @@ import Alimentation from "./pages/AlimentationList.jsx";
 import Fabrication from "./pages/FabricationList.jsx";
 import Services from "./pages/ServicesList.jsx";
 import Recherche from "./pages/Recherche.jsx";
+import AdminLogin from "./pages/AdminLogin.jsx";
+import AdminDashboard from "./pages/AdminDashboard.jsx";
 
 // Définition du router
 export const router = createBrowserRouter([
@@ -35,7 +37,9 @@ export const router = createBrowserRouter([
       { path: "services", element: <Services /> },
 
       // Page de recherche
-      { path: "recherche", element: <Recherche /> }
+      { path: "recherche", element: <Recherche /> },
+      { path: "admin/connexion", element: <AdminLogin /> },
+      { path: "admin", element: <AdminDashboard /> },
     ],
   },
 ]);

@@ -23,7 +23,7 @@ function normalizeArtisan(a) {
     departement: a.ville?.departement
       ? { id: a.ville.departement.id, code: a.ville.departement.code, nom: a.ville.departement.nom }
       : null,
-    categorie: a.categorie?.nom || "",
+    categorie: a.specialite_obj?.categorie?.nom || "",
     note: Number(a.note) || 0,
     image: a.image || "/images/placeholder.jpg",
     email: a.email || "",

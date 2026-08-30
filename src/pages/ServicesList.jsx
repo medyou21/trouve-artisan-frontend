@@ -116,9 +116,8 @@ export default function Services() {
             </div>
 
             <button
-              type="button"
+              type="submit"
               className="btn btn-primary btn-sm w-100"
-              onClick={() => handleSearch()}
             >
               Rechercher
             </button>
